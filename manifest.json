@@ -1,0 +1,30 @@
+{
+  "product": "P4can-unlock-more",
+  "base_version": "v3.29.3",
+  "fw_version": "v3.29.3-light1",
+  "tag": "light1",
+  "ota": {
+    "file": "P4can-unlock-more-v3.29.3-light1-ota.bin",
+    "size": 1486240,
+    "size_human": "1.42 MB",
+    "sha256": "f855a9ea1aa4eabc870186eeb5573fdc96f4d1715b15faf54e59da7569f6eb7e",
+    "app_partition_bytes": 4718592,
+    "headroom_bytes": 3232352,
+    "upload_endpoint": "POST /update",
+    "status_endpoint": "GET /api/ota/status",
+    "how": "连 P4 热点 -> 设置 -> 固件更新 -> 选此文件 -> 点两下确认"
+  },
+  "full": {
+    "file": "P4can-unlock-more-v3.29.3-light1-full.bin",
+    "size": 33554432,
+    "sha256": "e6d5a6bde001dede54f176f0456090033706f44cc0b08c068151f64e306cc74d",
+    "how": "USB 线刷：esptool write_flash 0x0 <full.bin>，只能在电脑上做"
+  },
+  "html_sha256": "2aac8f80b30cf9cc74984057077ce56ec8e9f076f70a62049546c67594f04ba9",
+  "html_bytes": 533287,
+  "built_at": "2026-11-23T22:15:21+08:00",
+  "build_seconds": 34,
+  "fqbn": "esp32:esp32:esp32p4:ChipVariant=postv3,FlashSize=32M,PartitionScheme=app5M_fat24M_32MB,PSRAM=enabled,USBMode=hwcdc,CDCOnBoot=cdc,FlashMode=qio",
+  "partition_scheme": "app5M_fat24M_32MB",
+  "note": "OTA 只能写 app 分区；bootloader/分区表变了必须用 full 线刷"
+}

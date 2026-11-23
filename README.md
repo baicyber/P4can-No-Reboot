@@ -1,0 +1,185 @@
+# P4can-No-Reboot
+
+> 修好一件小事：**开了「被封车辆 + TLSSC 恢复」之后，车机不用每轮上电都人工重启一次了。**
+
+这是给 **Waveshare ESP32-P4 WiFi6 3×TWAI**（32 MB flash）板子的特斯拉 CAN 工具固件成品包，
+基于 [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock) `v3.29.3`。
+本仓库**只发布编译好的固件**（`.bin`），不含源码。
+
+**界面默认中文**，右上角语言开关可切英文。
+
+> [!WARNING]
+> **只适用于 32 MB Flash 的板子**（微雪 ESP32-P4-WIFI6 / rev3.2）。
+> **16 MB 版本刷这个包会直接变砖** —— 分区表 `app5M_fat24M_32MB` 与 16 MB flash 不匹配，
+> 烧进去连 bootloader 都起不来，只能用 USB 重新救回来。
+
+---
+
+## 它修复了什么
+
+### 现象
+
+「被封车辆 + TLSSC 恢复」开着时，**每轮上电都要人工重启一次车机**才有 TLSSC。
+
+### 根因
+
+TLSSC 恢复只做 `0x331` 的读-改-重发：**车发一帧，我们改一帧**。
+而车机只在**自己启动时读一次** DAS 配置并锁存 —— 那一刻总线上要是还没有被改过的
+`0x331`，车机就锁存「封禁」，得人工重启车机才重读。上游 Flipper 项目文档也把它直接标成
+"Triggers MCU reboot"。
+
+### 做法
+
+把这个动作**提前到车机读配置之前**：
+
+| 步骤 | 做法 |
+|---|---|
+| 缓存 | 把补丁后的 `0x331` 载荷存进 NVS（每个上电周期最多写一次，护 flash） |
+| 补发 | 每次上电 CAN B 就绪后开 60 s 窗口，以 10 Hz 补发缓存帧，不等车先发 |
+| 让位 | 车自己开始发 `0x331`（2 s 内有新鲜帧）就立刻停手，回到读-改-重发 |
+| 收尾 | 窗口到期或补到 600 帧彻底停手，不会无限期造帧 |
+
+只在「被封车辆」+「TLSSC 恢复」**都开着**时才动作；没有缓存帧（第一次用）就什么都不发；
+走 CAN B，过与其它注入相同的 TX 屏障 / 管理员挂起 / USB 被动 / epoch 检查。
+
+后续还修了一处：补发计数里偶发的「失败 1」不是帧发不出去，而是抢 TX 屏障锁时撞上
+爆闪 / AP 注入返回 `ESP_ERR_TIMEOUT`，被误记成失败。现在单列为「让位」，不计失败、
+下个周期自动重试；错误读数也从 `int8_t` 改 `int16_t`，不会再截断。
+
+### 怎么验证
+
+页面「更多功能 → EAP」开关下方的状态行分五种：关闭 / 缺前提 / 待首帧 / 车在自己发 / 补发 N 帧。
+接口 `status.eapNr` 给可读字段：`enabled` / `prereq` / `cacheValid` / `cacheHex` /
+`stockRx` / `replayOk` / `replayFail` / `burst` / `lastErr`。
+
+**能保证什么：** 只要本机 CAN 比车机读配置先上线，车机读到的就是 `SELF_DRIVING` 的
+`0x331`，不用人工重启；即使车机晚读，缓存帧也会在窗口内一直挂在总线上。
+
+**不能保证什么：** 如果这辆车的 `0x331` 是周期性常发（本机会让位，改走读-改-重发），
+而车机又在本机 CAN 上线之前就读完了配置，那一次仍然需要人工重启一次车机 ——
+这是总线时序决定的，软件补不回来。以 `stockRx` / `replayOk` / `cacheHex` 三个读数判定。
+
+### 顺带带来的能力
+
+固件同时带：灯光功能整页（作者 v3.35.6 四项）、更多功能页（滚轮换挡/动力狂暴/越野/
+ESP 关闭/维护模式）、网页 OTA 升级、Wi-Fi 中继、抓包页、中英双语。这些是随基线一起
+带出来的附带改动，不是本仓库的主要目的。
+
+---
+
+## 下载
+
+| 文件 | 大小 | 用途 |
+|---|---|---|
+| `P4can-unlock-more-v3.29.3-light1-ota.bin` | 1,486,240 B (1.42 MB) | **平时升级用**。只写 app 分区，失败可回滚 |
+| `P4can-unlock-more-v3.29.3-light1-full.bin` | 33,554,432 B (32 MB) | **首次烧录 / 救砖用**。整片镜像，含 bootloader 和分区表 |
+| `manifest.json` | 1.3 KB | 两个包的 sha256、大小、分区余量、构建参数 |
+
+校验值（来自 `manifest.json`，已核对）：
+
+| 文件 | sha256 |
+|---|---|
+| OTA | `f855a9ea1aa4eabc870186eeb5573fdc96f4d1715b15faf54e59da7569f6eb7e` |
+| full | `e6d5a6bde001dede54f176f0456090033706f44cc0b08c068151f64e306cc74d` |
+
+下载后建议先校验：
+
+```bash
+sha256sum P4can-unlock-more-v3.29.3-light1-ota.bin
+# 应输出 f855a9ea...6eb7e
+```
+
+---
+
+## 刷机
+
+### 升级包 `*-ota.bin` —— 平时更新用
+
+1. 手机/电脑连上 P4 的热点
+2. 打开 `http://192.168.4.1` → **设置 → 固件更新**
+3. 选 `P4can-unlock-more-v3.29.3-light1-ota.bin`
+4. 点一下，再点一下确认，等进度条走完自动重启
+
+OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
+
+### 完整包 `*-full.bin` —— 首次烧录 / 救砖用
+
+```bash
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-light1-full.bin
+```
+
+整片镜像布局（ESP32-P4 与 S3 不同，`0x0` 是空白 `0xFF`）：
+
+| 偏移 | 内容 |
+|---|---|
+| `0x2000` | bootloader（magic `E9`） |
+| `0x8000` | 分区表（magic `AA50`） |
+| `0x10000` | 应用镜像（magic `E9`） |
+
+刷完对照页面顶部版本号确认是 `v3.29.3-light1`。
+
+---
+
+## 硬件与接线
+
+板子：Waveshare ESP32-P4-WIFI6，rev3.2，32 MB flash，`app5M_fat24M_32MB` 分区。
+`ota_0` / `ota_1` 各 `0x480000`（4.5 MB），单包上限 4,718,592 B。
+
+| 总线 | TWAI | TX | RX |
+|---|---|---|---|
+| CAN 1 BODY | 0 | GPIO20 | GPIO21 |
+| CAN 2 CHASSIS | 1 | GPIO22 | GPIO23 |
+| CAN 3 PARTY | 2 | GPIO26 | GPIO27 |
+
+---
+
+## 已知限制
+
+- `gauge` 仍是 503：0xB0 仪表、0x5D9 胎压载荷没解码。
+- EAP 防重启依赖总线上电时序，边界见上文「不能保证什么」。
+- 灯光频闪、后雾灯等帧定义来自静态逆向（证据等级 A），**没有实车抓包对照**；
+  动态刹车灯、动力与制动域改动先在封闭场地确认。
+- 分区表、bootloader、flash 参数只能线刷，OTA 无法更改。
+- 没有在实车上逐项验证过所有写入行为。
+
+---
+
+## 安全与合规
+
+这是给**封闭场地调试**用的工具。改动车身行为（灯光爆闪、免打扰抑制、
+驾驶员监控抑制等）在公共道路上可能违法，也可能让车辆进入不符合型式认证的状态。
+
+- 一切后果自负，作者不承担任何责任
+- 不要在公共道路使用影响灯光、喇叭、限速识别的功能
+- 刷机前确认你有办法救砖（完整包 + USB 线）
+
+与特斯拉公司无任何关联。特斯拉、Model 3/Y 等商标归其所有者。
+固件基线的版权与条款见 [NOTICE](NOTICE)，本项目新增部分的授权见 [LICENSE](LICENSE)。
+
+---
+
+## ☕ 赞助
+
+> 固件免费。如果它帮你省下了折腾的时间，欢迎请作者喝杯咖啡，助力后续更新~
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/sponsor/web_alipay.jpg" width="220" alt="支付宝收款码"><br><sub><b>支付宝</b></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="微信收款码"><br><sub><b>微信支付</b></sub></td>
+  </tr>
+</table>
+
+## 📮 联系作者
+
+> 装不上、刷完了没反应、想加功能，都可以来找我。
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/sponsor/web_douyin.jpg" width="220" alt="抖音二维码"><br><sub><b>抖音 · @耶基大学懂事长</b><br>抖音号 <code>yejiuni</code></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechatauthor.jpg" width="220" alt="作者微信二维码"><br><sub><b>微信 · 扫码加好友</b></sub></td>
+  </tr>
+</table>
+
+---
+
+[English](README.en.md)
