@@ -194,7 +194,7 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 
 ## 📮 联系作者
 
-> 装不上、刷完了没反应、想加功能，都可以来找我。
+> 问题反馈。
 
 <table>
   <tr>
