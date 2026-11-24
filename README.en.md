@@ -83,25 +83,17 @@ recover. Judge the real car by `stockRx` / `replayOk` / `cacheHex`.
 v3.35.6, four entries), More features page, browser OTA update, Wi-Fi relay,
 packet capture, bilingual UI.
 
-**Two settings added since v3.29.3-shift1** (ported from upstream v3.35.3):
-
-- **CAN GPIO**: configure TX/RX pins for the three CAN buses (GPIO 0–54, excluding
-  pins used by C6/USB). Changes apply after reboot, never hot-swapped. The mapping
-  lives in its own NVS namespace (survives feature/setup resets, cleared only by
-  Factory Reset). If the record is corrupt, the firmware boots into Wi-Fi/settings
-  recovery only rather than starting CAN with wrong pins.
-- **SmartShift** (from `kl79613/P4Can-automatic-shifting`, MIT): automatic shifting
-  from radar/vision candidates with brake confirmation. **Execution is OFF by
-  default** — enable it manually in Settings. Full gating (seat belt, speed, doors,
-  steering, cooldown); at most one request per brake press. Not supported on Model
-  YL; park-steering selection calibrated only for Model Y Legacy. **Not road-tested
-  — evaluate the risk yourself.**
+> [!NOTE]
+> The experimental `shift1` build (CAN GPIO pin remap + SmartShift) was **rolled
+> back** from release due to connectivity-compatibility reports. The current firmware
+> at the repository root is `v3.29.3-tlssc1`. The experimental source is still kept in
+> `source/` for reference but flashing it is not recommended — use the root images.
 
 ---
 
 ## Source code
 
-The complete source tree is in [`source/`](source/), matching the `*-shift1-*.bin`
+The complete source tree is in [`source/`](source/), matching the `*-tlssc1-*.bin`
 images at the repository root (v3.29.3 + TLSSC anti-restart + the full lighting
 page and other changes).
 
@@ -122,22 +114,22 @@ the minimal TLSSC anti-restart fix sent upstream see
 
 | File | Size | Use |
 |---|---|---|
-| `P4can-unlock-more-v3.29.3-shift1-ota.bin` | 1,520,496 B (1.45 MB) | **Everyday updates.** App partition only, rollback on failure |
-| `P4can-unlock-more-v3.29.3-shift1-full.bin` | 33,554,432 B (32 MB) | **First flash / recovery.** Full image with bootloader and partition table |
+| `P4can-unlock-more-v3.29.3-tlssc1-ota.bin` | 1,486,240 B (1.42 MB) | **Everyday updates.** App partition only, rollback on failure |
+| `P4can-unlock-more-v3.29.3-tlssc1-full.bin` | 33,554,432 B (32 MB) | **First flash / recovery.** Full image with bootloader and partition table |
 | `manifest.json` | 1.3 KB | sha256, sizes, partition headroom, build parameters |
 
 Checksums (from `manifest.json`, verified):
 
 | File | sha256 |
 |---|---|
-| OTA | `ecc730d36c9f6bedd766bc545895b9b3515f356a3a9e36fd9b6593968a8a6eef` |
-| full | `628dc74f99cd3206c1ff5858a7d447211d3ea6a07fa51fbd5d74ad9c8f2e239f` |
+| OTA | `4f6afb8309fdb25a6ff7b302d68924d000d9642b37b69ad331d43d81356fd35b` |
+| full | `bb61551f791192d6b1ef16312865e88e5f35bb786014e83dd25c2a074a34a462` |
 
 Verify after download:
 
 ```bash
-sha256sum P4can-unlock-more-v3.29.3-shift1-ota.bin
-# expect: ecc730d3...6eef
+sha256sum P4can-unlock-more-v3.29.3-tlssc1-ota.bin
+# expect: 4f6afb83...d35b
 ```
 
 ---
@@ -148,7 +140,7 @@ sha256sum P4can-unlock-more-v3.29.3-shift1-ota.bin
 
 1. Join the P4's hotspot on phone or PC
 2. Open `http://192.168.4.1` → **Settings → Firmware update**
-3. Pick `P4can-unlock-more-v3.29.3-shift1-ota.bin`
+3. Pick `P4can-unlock-more-v3.29.3-tlssc1-ota.bin`
 4. Tap once, confirm, wait for the progress bar to finish and the device to reboot
 
 OTA only writes the app partition — **it cannot change the bootloader, partition
@@ -157,7 +149,7 @@ table or flash parameters**.
 ### `*-full.bin` — first flash / recovery
 
 ```bash
-esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-shift1-full.bin
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-tlssc1-full.bin
 ```
 
 Full image layout (ESP32-P4 differs from S3; `0x0` is blank `0xFF`):
@@ -168,7 +160,7 @@ Full image layout (ESP32-P4 differs from S3; `0x0` is blank `0xFF`):
 | `0x8000` | partition table (magic `AA50`) |
 | `0x10000` | app image (magic `E9`) |
 
-After flashing, confirm the page header reads `v3.29.3-shift1`.
+After flashing, confirm the page header reads `v3.29.3-tlssc1`.
 
 ---
 
