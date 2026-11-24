@@ -112,14 +112,14 @@ ESP 关闭/维护模式）、网页 OTA 升级、Wi-Fi 中继、抓包页、中�
 
 | 文件 | sha256 |
 |---|---|
-| OTA | `4d1d334c0f3dbb340d926cb8db90c77a7afd0ca14c5d201f233f28e5878036b9` |
-| full | `6ba7c18978af28c014cc38853204ddd0c92144aa7a9d74d2ce1e837f38c6b2b8` |
+| OTA | `ecc730d36c9f6bedd766bc545895b9b3515f356a3a9e36fd9b6593968a8a6eef` |
+| full | `628dc74f99cd3206c1ff5858a7d447211d3ea6a07fa51fbd5d74ad9c8f2e239f` |
 
 下载后建议先校验：
 
 ```bash
 sha256sum P4can-unlock-more-v3.29.3-shift1-ota.bin
-# 应输出 4d1d334c...036b9
+# 应输出 ecc730d3...6eef
 ```
 
 ---
