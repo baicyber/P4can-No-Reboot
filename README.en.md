@@ -48,9 +48,16 @@ collision with strobe/AP injection returning `ESP_ERR_TIMEOUT`. It is now counte
 as a yield (not a failure) and retried on the next tick; the error code was widened
 from `int8_t` to `int16_t` so it no longer truncates.
 
-**On by default since v3.29.3-nr2.** A fresh install, and an upgrade from nr1,
+**On by default since v3.29.3-nr3.** A fresh install, and an upgrade from nr1,
 both start with EAP anti-restart enabled. Turn it off under More features →
 EAP anti-restart if you do not want it; that choice is persisted too.
+
+**nr3 also fixes** the "Nag Killer" toggle on the home page refusing to turn on
+("Settings could not be saved") when an old or corrupt NAG snapshot is in NVS —
+previously the only way out was a full factory reset. A validated fresh snapshot
+may now overwrite the bad record, clearing the read-error latch only after a
+successful write, so **no reset is needed**. A genuinely unwritable NVS still
+reports an error.
 
 **How to check.** The status line under "More features → EAP" reads one of: off /
 missing prerequisite / waiting for first frame / car is sending it / replayed N
@@ -71,7 +78,7 @@ packet capture, bilingual UI.
 
 ## Source code
 
-The complete source tree is in [`source/`](source/), matching the `*-nr2-*.bin`
+The complete source tree is in [`source/`](source/), matching the `*-nr3-*.bin`
 images at the repository root (v3.29.3 + EAP anti-restart + the full lighting
 page and other changes).
 
@@ -92,22 +99,22 @@ the minimal EAP-only fix sent upstream see
 
 | File | Size | Use |
 |---|---|---|
-| `P4can-unlock-more-v3.29.3-nr2-ota.bin` | 1,486,240 B (1.42 MB) | **Everyday updates.** App partition only, rollback on failure |
-| `P4can-unlock-more-v3.29.3-nr2-full.bin` | 33,554,432 B (32 MB) | **First flash / recovery.** Full image with bootloader and partition table |
+| `P4can-unlock-more-v3.29.3-nr3-ota.bin` | 1,486,224 B (1.42 MB) | **Everyday updates.** App partition only, rollback on failure |
+| `P4can-unlock-more-v3.29.3-nr3-full.bin` | 33,554,432 B (32 MB) | **First flash / recovery.** Full image with bootloader and partition table |
 | `manifest.json` | 1.3 KB | sha256, sizes, partition headroom, build parameters |
 
 Checksums (from `manifest.json`, verified):
 
 | File | sha256 |
 |---|---|
-| OTA | `fa30e77f97c421b17d441679717b52b521bb2e02d1b8a51e96cd37e0dbd3c83b` |
-| full | `2f278319119d6b9959e99973bca4a49c0a27e1706e27d16e721f5511901537c8` |
+| OTA | `903d4ca285770e5a1a460b2d469f301b5e47318db53d3fa30515b7af60a6acb2` |
+| full | `0b02a418796029be477e93e651c25c9af524d918684630684b197943429ab50f` |
 
 Verify after download:
 
 ```bash
-sha256sum P4can-unlock-more-v3.29.3-nr2-ota.bin
-# expect: fa30e77f...3c83b
+sha256sum P4can-unlock-more-v3.29.3-nr3-ota.bin
+# expect: 903d4ca2...6acb2
 ```
 
 ---
@@ -118,7 +125,7 @@ sha256sum P4can-unlock-more-v3.29.3-nr2-ota.bin
 
 1. Join the P4's hotspot on phone or PC
 2. Open `http://192.168.4.1` → **Settings → Firmware update**
-3. Pick `P4can-unlock-more-v3.29.3-nr2-ota.bin`
+3. Pick `P4can-unlock-more-v3.29.3-nr3-ota.bin`
 4. Tap once, confirm, wait for the progress bar to finish and the device to reboot
 
 OTA only writes the app partition — **it cannot change the bootloader, partition
@@ -127,7 +134,7 @@ table or flash parameters**.
 ### `*-full.bin` — first flash / recovery
 
 ```bash
-esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-nr2-full.bin
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-nr3-full.bin
 ```
 
 Full image layout (ESP32-P4 differs from S3; `0x0` is blank `0xFF`):
@@ -138,7 +145,7 @@ Full image layout (ESP32-P4 differs from S3; `0x0` is blank `0xFF`):
 | `0x8000` | partition table (magic `AA50`) |
 | `0x10000` | app image (magic `E9`) |
 
-After flashing, confirm the page header reads `v3.29.3-nr2`.
+After flashing, confirm the page header reads `v3.29.3-nr3`.
 
 ---
 

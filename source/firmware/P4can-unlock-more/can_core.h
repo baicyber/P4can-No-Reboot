@@ -1250,7 +1250,10 @@ static void nagCfgLoadSafeDefaults() {
 static bool nagCfgPersistSnapshot(const NagConfig& config,
                           const ModeHConfigPure& human,
                           uint8_t variant, const NagScrollStoredSnapshot& scroll) {
-  if (nagNvsReadError) return false;
+  // 旧版（或版本不兼容）的 NAG 快照会在 nagCfgLoad() 里置 nagNvsReadError。
+  // 以前这里直接 return false，结果是「开关打不开、保存一律失败」，
+  // 唯一出路是整机 factory reset。坏快照本来就应该允许被一份有效配置覆盖：
+  // 真正判断能否写入的是 nvsCheckedWriteBlob()（NVS 打不开时它自己会失败）。
   NagStoredSnapshot stored = {};
   stored.version = 1u;
   stored.config = config;
@@ -1260,7 +1263,10 @@ static bool nagCfgPersistSnapshot(const NagConfig& config,
   stored.scroll = scroll;
   stored.variant = nagModeHVariantValidPure(variant)
       ? variant : nagModeHDefaultVariantPure();
-  return nvsCheckedWriteBlob("nag", "snapshot", &stored, sizeof(stored));
+  const bool ok = nvsCheckedWriteBlob("nag", "snapshot", &stored, sizeof(stored));
+  // 覆盖成功后这份快照已有效，解锁后续正常保存。
+  if (ok) nagNvsReadError = false;
+  return ok;
 }
 
 static bool nagCfgPersist(const NagConfig& config,
