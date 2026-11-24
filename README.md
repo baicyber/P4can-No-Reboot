@@ -2,14 +2,14 @@
 
 > 修好一件小事：**开了「被封车辆 + TLSSC 恢复」之后，车机不用每轮上电都人工重启一次了。**
 
-这是给 **Waveshare ESP32-P4 WiFi6 3×TWAI**（32 MB flash）板子的特斯拉 CAN 工具固件成品包，
+这是给 **Waveshare ESP32-P4-C6 WiFi6 3×TWAI**（32 MB flash）板子的特斯拉 CAN 工具固件成品包，
 基于 [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock) `v3.29.3`。
 根目录是**编译好的固件**（`.bin`），完整源码在 [`source/`](source/) 子目录。
 
 **界面默认中文**，右上角语言开关可切英文。
 
 > [!WARNING]
-> **只适用于 32 MB Flash 的板子**（微雪 ESP32-P4-WIFI6 / rev3.2）。
+> **只适用于 32 MB Flash 的板子**（微雪 ESP32-P4-C6-WIFI6 / rev3.2）。
 > **16 MB 版本刷这个包会直接变砖** —— 分区表 `app5M_fat24M_32MB` 与 16 MB flash 不匹配，
 > 烧进去连 bootloader 都起不来，只能用 USB 重新救回来。
 
