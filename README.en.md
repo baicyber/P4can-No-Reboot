@@ -11,6 +11,15 @@ source tree is in the [`source/`](source/) subdirectory.
 
 **UI defaults to Chinese**; the language switch in the top-right toggles English.
 
+> [!TIP]
+> **Want to preview the UI without flashing?** A **simulator page** is included:
+> [`source/sim/p4can-sim.html`](source/sim/p4can-sim.html) — download it and open in a browser
+> (clicking it on GitHub only shows source code; that is normal).
+> It ships with a fake backend, needs no board, never connects to a real car, and shows a
+> clear "SIMULATION" banner at the top. Feel free to click through every toggle and page —
+> it is a UI demo only and **cannot modify any real vehicle**. The actual firmware to flash
+> is the `.bin` files in the repository root below.
+
 > [!WARNING]
 > **32 MB flash only** (Waveshare ESP32-P4-WIFI6 / rev3.2). The
 > `app5M_fat24M_32MB` partition table does not fit a 16 MB board — flashing this

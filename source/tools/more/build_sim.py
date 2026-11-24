@@ -51,6 +51,16 @@ MOCK = r"""
   padding:7px 10px;border-radius:999px;background:#111;color:#fff;letter-spacing:.08em;cursor:pointer;
   box-shadow:0 4px 14px rgba(0,0,0,.28);opacity:.82;user-select:none}
 #simFab:hover{opacity:1}
+/* 醒目的模拟页面标识：打开第一眼就知道这不是真机固件页面 */
+#simNotice{position:fixed;z-index:200;top:0;left:50%;transform:translateX(-50%);width:min(520px,100%);
+  background:linear-gradient(90deg,#a63612,#d97706);color:#fff;text-align:center;
+  font:700 11px/1.35 -apple-system,system-ui,sans-serif;padding:6px 32px 6px 10px;
+  box-shadow:0 2px 12px rgba(0,0,0,.3)}
+#simNotice b{font-weight:800}
+#simNotice small{display:block;font-weight:500;opacity:.92;font-size:9px;margin-top:1px}
+#simNotice .x{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;
+  background:rgba(255,255,255,.2);color:#fff;width:20px;height:20px;border-radius:50%;
+  font:700 13px/20px -apple-system,system-ui,sans-serif;cursor:pointer;padding:0}
 #simPanel{position:fixed;right:10px;top:44px;z-index:9999;width:min(340px,calc(100vw - 20px));display:none;
   font:12px/1.5 -apple-system,system-ui,sans-serif;background:#fff;color:#111;border:1px solid #d5d7db;
   border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.22);overflow:hidden}
@@ -71,8 +81,13 @@ MOCK = r"""
 #simPanel button:hover{background:#f2f3f5}
 #simPanel .hint{font-size:10.5px;color:#6b7280;margin:0 0 8px}
 </style>
-<div id="simFab">SIM</div>
-<div id="simPanel">
+<div id="simNotice">
+  <b>模拟页面 / SIMULATION</b> · 本页不连接真实车辆，所有数据均为本地演示
+  <small>右上角 SIM 面板可查看模拟后端状态 · 真机固件请刷根目录的 .bin</small>
+  <button class="x" id="simNoticeClose" title="关闭提示" aria-label="关闭提示">×</button>
+</div>
+<div id="simFab" style="top:52px">SIM</div>
+<div id="simPanel" style="top:86px">
   <div class="hd">Local simulation<span id="simExit">hide</span></div>
   <div class="bd">
     <div class="row"><input type="checkbox" id="simWired" checked><label for="simWired">非凡后端在线（<code>/api/feifan/status</code> 返回 200，与固件同契约）</label></div>
@@ -435,6 +450,13 @@ MOCK = r"""
     var fab=document.getElementById('simFab'),panel=document.getElementById('simPanel');
     var wired=document.getElementById('simWired'),hint=document.getElementById('simHint');
     var mod=document.getElementById('simModule');
+    /* 模拟页面横幅：默认显示，关掉后记住，不再打扰 */
+    var notice=document.getElementById('simNotice'),noticeClose=document.getElementById('simNoticeClose');
+    try{if(localStorage.getItem('simNoticeClosed')==='1'&&notice)notice.style.display='none';}catch(e){}
+    if(noticeClose)noticeClose.onclick=function(){
+      if(notice)notice.style.display='none';
+      try{localStorage.setItem('simNoticeClosed','1')}catch(e){}
+    };
     function sync(){
       wired.checked=SIM.wired;
       if(mod)mod.checked=SIM.hasModule;
