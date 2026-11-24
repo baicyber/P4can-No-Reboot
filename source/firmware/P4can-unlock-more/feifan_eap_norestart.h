@@ -23,6 +23,8 @@
 //   3) 一旦车自己开始发 0x331（2 秒内有新鲜帧），立刻停手，回到原来的
 //      「跟随原厂 + 读改重发」模式，不跟真帧抢总线。
 //   4) 窗口到期或补发次数到上限就彻底停手，不会无限期造帧。
+//   5) 开关默认开启；v3.29.3-nr2 起换新 NVS key，旧版升级后也是开启，
+//      用户随时可以在页面里关掉（关掉后的状态同样持久化）。
 //
 // 边界与安全
 // ----------
@@ -37,7 +39,9 @@
 #pragma once
 
 #define FEIFAN_EAP_NR_NS      "feifan"   // 与 feifan_api.h 同一个命名空间
-#define FEIFAN_EAP_NR_KEY_ON  "eapNr"    // 开关本身（跨上电保持）
+// v3.29.3-nr2 起默认开启。换新 key 让旧版（默认关闭、NVS 里存过 eapNr=0）
+// 升级后也拿到「开启」这个新默认；用户之后在页面里关闭仍会正常持久化。
+#define FEIFAN_EAP_NR_KEY_ON  "eapNrOn"  // 开关本身（跨上电保持）
 #define FEIFAN_EAP_NR_KEY_HEX "eapHex"   // 缓存的 0x331 载荷（8 字节 hex）
 
 #define FEIFAN_EAP_NR_WINDOW_MS      60000u  // 每次上电的补发窗口
@@ -45,7 +49,7 @@
 #define FEIFAN_EAP_NR_MAX_FRAMES       600u  // 单次上电最多补发帧数
 #define FEIFAN_EAP_NR_STOCK_FRESH_MS  2000u  // 车自己在发：2 秒内有帧就让位
 
-static volatile bool eapNrEnabled = false;      // 开关（NVS 持久化）
+static volatile bool eapNrEnabled = true;       // 开关（NVS 持久化，默认开启）
 static uint8_t eapNrFrame[8] = {};              // 缓存的那条 0x331（已补丁）
 static volatile uint8_t eapNrFrameLen = 0;
 static volatile bool eapNrFrameValid = false;
@@ -65,7 +69,7 @@ static volatile uint16_t eapNrBurst = 0;        // 本轮已补发帧数
 static void feifanEapNrLoad() {
   Preferences p;
   if (!p.begin(FEIFAN_EAP_NR_NS, true)) return;
-  eapNrEnabled = p.getBool(FEIFAN_EAP_NR_KEY_ON, false);
+  eapNrEnabled = p.getBool(FEIFAN_EAP_NR_KEY_ON, true);
   String hex = p.getString(FEIFAN_EAP_NR_KEY_HEX, "");
   p.end();
 

@@ -46,6 +46,9 @@ TLSSC 恢复只做 `0x331` 的读-改-重发：**车发一帧，我们改一帧*
 爆闪 / AP 注入返回 `ESP_ERR_TIMEOUT`，被误记成失败。现在单列为「让位」，不计失败、
 下个周期自动重试；错误读数也从 `int8_t` 改 `int16_t`，不会再截断。
 
+**v3.29.3-nr2 起，EAP 免重启开关默认开启**：首次刷入或从 nr1 升级后开关即为开；
+不想用时到「更多功能 → EAP 防重启」手动关闭即可，之后会记住关闭状态。
+
 ### 怎么验证
 
 页面「更多功能 → EAP」开关下方的状态行分五种：关闭 / 缺前提 / 待首帧 / 车在自己发 / 补发 N 帧。
@@ -69,7 +72,7 @@ ESP 关闭/维护模式）、网页 OTA 升级、Wi-Fi 中继、抓包页、中�
 
 ## 源码
 
-完整源码在 [`source/`](source/) 子目录，与根目录的 `*-nr1-*.bin` 对应（v3.29.3 + EAP 免重启 + 灯光整页等改动）。
+完整源码在 [`source/`](source/) 子目录，与根目录的 `*-nr2-*.bin` 对应（v3.29.3 + EAP 免重启 + 灯光整页等改动）。
 
 - 固件 sketch：`source/firmware/P4can-unlock-more/P4can-unlock-more.ino`
 - 前端页面：`source/firmware/P4can-unlock-more/dashboard_source.html`
@@ -86,22 +89,22 @@ ESP 关闭/维护模式）、网页 OTA 升级、Wi-Fi 中继、抓包页、中�
 
 | 文件 | 大小 | 用途 |
 |---|---|---|
-| `P4can-unlock-more-v3.29.3-nr1-ota.bin` | 1,486,224 B (1.42 MB) | **平时升级用**。只写 app 分区，失败可回滚 |
-| `P4can-unlock-more-v3.29.3-nr1-full.bin` | 33,554,432 B (32 MB) | **首次烧录 / 救砖用**。整片镜像，含 bootloader 和分区表 |
+| `P4can-unlock-more-v3.29.3-nr2-ota.bin` | 1,486,240 B (1.42 MB) | **平时升级用**。只写 app 分区，失败可回滚 |
+| `P4can-unlock-more-v3.29.3-nr2-full.bin` | 33,554,432 B (32 MB) | **首次烧录 / 救砖用**。整片镜像，含 bootloader 和分区表 |
 | `manifest.json` | 1.3 KB | 两个包的 sha256、大小、分区余量、构建参数 |
 
 校验值（来自 `manifest.json`，已核对）：
 
 | 文件 | sha256 |
 |---|---|
-| OTA | `309e5090883223c1a4a55f171b5e805f00eedec1582093f69760fb32b5e02c11` |
-| full | `ee1906034b35b1621b31ca3c47a0c1d6e8fe7863e8afe05286ae77fcfbe8f1f9` |
+| OTA | `fa30e77f97c421b17d441679717b52b521bb2e02d1b8a51e96cd37e0dbd3c83b` |
+| full | `2f278319119d6b9959e99973bca4a49c0a27e1706e27d16e721f5511901537c8` |
 
 下载后建议先校验：
 
 ```bash
-sha256sum P4can-unlock-more-v3.29.3-nr1-ota.bin
-# 应输出 309e5090...02c11
+sha256sum P4can-unlock-more-v3.29.3-nr2-ota.bin
+# 应输出 fa30e77f...3c83b
 ```
 
 ---
@@ -112,7 +115,7 @@ sha256sum P4can-unlock-more-v3.29.3-nr1-ota.bin
 
 1. 手机/电脑连上 P4 的热点
 2. 打开 `http://192.168.4.1` → **设置 → 固件更新**
-3. 选 `P4can-unlock-more-v3.29.3-nr1-ota.bin`
+3. 选 `P4can-unlock-more-v3.29.3-nr2-ota.bin`
 4. 点一下，再点一下确认，等进度条走完自动重启
 
 OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
@@ -120,7 +123,7 @@ OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
 ### 完整包 `*-full.bin` —— 首次烧录 / 救砖用
 
 ```bash
-esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-nr1-full.bin
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-nr2-full.bin
 ```
 
 整片镜像布局（ESP32-P4 与 S3 不同，`0x0` 是空白 `0xFF`）：
@@ -131,7 +134,7 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 | `0x8000` | 分区表（magic `AA50`） |
 | `0x10000` | 应用镜像（magic `E9`） |
 
-刷完对照页面顶部版本号确认是 `v3.29.3-nr1`。
+刷完对照页面顶部版本号确认是 `v3.29.3-nr2`。
 
 ---
 

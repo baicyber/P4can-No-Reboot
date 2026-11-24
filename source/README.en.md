@@ -105,6 +105,10 @@ It is the only entry on this page that persists to NVS (all `q1x` are
 drive-session only), because the whole point is that nobody has to touch it
 again after the first enable.
 
+**On by default** since v3.29.3-nr2: a fresh install, and an upgrade from an
+older build, both start with the switch on. Turn it off under
+More → EAP anti-restart if you do not want it; that choice is persisted too.
+
 **What it guarantees:** if this controller's CAN comes up before the touchscreen
 reads its config, the touchscreen reads a `SELF_DRIVING` `0x331` and no manual
 restart is needed; if the touchscreen reads later, the cached frame stays on the
