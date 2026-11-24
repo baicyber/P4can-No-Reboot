@@ -278,7 +278,7 @@ static void httpFeifanStatus() {
   // 动态刹车灯。独立页读 /api/lighting/stats，这里同时带一份，方便单请求诊断。
   j += ",\"lighting\":";
   j += ffLightingConfigJson();
-  // EAP 防重启：缓存 0x331 + 每次上电补发，省掉「每轮上电重启车机」这一步。
+  // TLSSC 免重启：缓存 0x331 + 每次上电补发，省掉「每轮上电重启车机」这一步。
   j += ",\"eapNr\":";
   j += feifanEapNrConfigJson();
   // 无模块标志：未启用链路且从未读到过配置块 = 车上没装 TSL 模块。
@@ -416,7 +416,7 @@ static void httpFeifanConfigPost() {
     return;
   }
 
-  // 【1c】EAP 防重启：更多功能里唯一一个必须跨上电保持的开关。
+  // 【1c】TLSSC 免重启：更多功能里唯一一个必须跨上电保持的开关。
   // 它自己不发任何「新功能」帧，只是在每次上电后把缓存的 0x331 补丁
   // 提前铺到总线上，让车机启动时读到的就是 SELF_DRIVING，不用再重启车机。
   // 真正动手的前提是「被封车辆」+「TLSSC 恢复」都开着；这里只负责存开关，

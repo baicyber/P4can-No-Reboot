@@ -46,8 +46,8 @@ TLSSC 恢复只做 `0x331` 的读-改-重发：**车发一帧，我们改一帧*
 爆闪 / AP 注入返回 `ESP_ERR_TIMEOUT`，被误记成失败。现在单列为「让位」，不计失败、
 下个周期自动重试；错误读数也从 `int8_t` 改 `int16_t`，不会再截断。
 
-**v3.29.3-nr3 起，EAP 免重启开关默认开启**：首次刷入或从 nr1 升级后开关即为开；
-不想用时到「更多功能 → EAP 防重启」手动关闭即可，之后会记住关闭状态。
+**v3.29.3-nr2 起，TLSSC 免重启开关默认开启**：首次刷入或从 nr1 升级后开关即为开；
+不想用时到「更多功能 → TLSSC 免重启」手动关闭即可，之后会记住关闭状态。
 
 nr3 另修一处：首页「Nag Killer · 提醒抑制」开关在旧版/损坏的 NAG 快照下点不动、
 提示「Settings could not be saved」，以前只能整机 factory reset 恢复。现在允许用一份
@@ -56,7 +56,7 @@ NVS 真不可写时仍会报错，不会掩盖真故障。
 
 ### 怎么验证
 
-页面「更多功能 → EAP」开关下方的状态行分五种：关闭 / 缺前提 / 待首帧 / 车在自己发 / 补发 N 帧。
+页面「更多功能 → TLSSC」开关下方的状态行分五种：关闭 / 缺前提 / 待首帧 / 车在自己发 / 补发 N 帧。
 接口 `status.eapNr` 给可读字段：`enabled` / `prereq` / `cacheValid` / `cacheHex` /
 `stockRx` / `replayOk` / `replayFail` / `burst` / `lastErr`。
 
@@ -77,39 +77,39 @@ ESP 关闭/维护模式）、网页 OTA 升级、Wi-Fi 中继、抓包页、中�
 
 ## 源码
 
-完整源码在 [`source/`](source/) 子目录，与根目录的 `*-nr3-*.bin` 对应（v3.29.3 + EAP 免重启 + 灯光整页等改动）。
+完整源码在 [`source/`](source/) 子目录，与根目录的 `*-tlssc1-*.bin` 对应（v3.29.3 + TLSSC 免重启 + 灯光整页等改动）。
 
 - 固件 sketch：`source/firmware/P4can-unlock-more/P4can-unlock-more.ino`
 - 前端页面：`source/firmware/P4can-unlock-more/dashboard_source.html`
 - 打包/构建脚本：`source/tools/more/`（`pack_ota.py`、`build_sim.py` 等）
-- EAP 免重启实现：`source/firmware/P4can-unlock-more/feifan_eap_norestart.h`
+- TLSSC 免重启实现：`source/firmware/P4can-unlock-more/feifan_eap_norestart.h`
 - 变更历史：`source/CHANGELOG.md`
 
 源码按上游同等方式开源，归属与授权见根目录 [`LICENSE`](LICENSE) 与 [`NOTICE`](NOTICE)。
 其中灯光算法等取自作者 v3.35.6 参考实现，相关归属在源码注释与 NOTICE 中逐项标注。
-本分支是功能集合分支；若只想看提交给上游的最小 EAP 修复，见
+本分支是功能集合分支；若只想看提交给上游的最小 TLSSC 免重启修复，见
 [upstream PR #15](https://github.com/06066060606060/P4can-universal-unlock/pull/15)。
 
 ## 下载
 
 | 文件 | 大小 | 用途 |
 |---|---|---|
-| `P4can-unlock-more-v3.29.3-nr3-ota.bin` | 1,486,224 B (1.42 MB) | **平时升级用**。只写 app 分区，失败可回滚 |
-| `P4can-unlock-more-v3.29.3-nr3-full.bin` | 33,554,432 B (32 MB) | **首次烧录 / 救砖用**。整片镜像，含 bootloader 和分区表 |
+| `P4can-unlock-more-v3.29.3-tlssc1-ota.bin` | 1,486,240 B (1.42 MB) | **平时升级用**。只写 app 分区，失败可回滚 |
+| `P4can-unlock-more-v3.29.3-tlssc1-full.bin` | 33,554,432 B (32 MB) | **首次烧录 / 救砖用**。整片镜像，含 bootloader 和分区表 |
 | `manifest.json` | 1.3 KB | 两个包的 sha256、大小、分区余量、构建参数 |
 
 校验值（来自 `manifest.json`，已核对）：
 
 | 文件 | sha256 |
 |---|---|
-| OTA | `903d4ca285770e5a1a460b2d469f301b5e47318db53d3fa30515b7af60a6acb2` |
-| full | `0b02a418796029be477e93e651c25c9af524d918684630684b197943429ab50f` |
+| OTA | `4f6afb8309fdb25a6ff7b302d68924d000d9642b37b69ad331d43d81356fd35b` |
+| full | `bb61551f791192d6b1ef16312865e88e5f35bb786014e83dd25c2a074a34a462` |
 
 下载后建议先校验：
 
 ```bash
-sha256sum P4can-unlock-more-v3.29.3-nr3-ota.bin
-# 应输出 903d4ca2...6acb2
+sha256sum P4can-unlock-more-v3.29.3-tlssc1-ota.bin
+# 应输出 4f6afb83...d35b
 ```
 
 ---
@@ -120,7 +120,7 @@ sha256sum P4can-unlock-more-v3.29.3-nr3-ota.bin
 
 1. 手机/电脑连上 P4 的热点
 2. 打开 `http://192.168.4.1` → **设置 → 固件更新**
-3. 选 `P4can-unlock-more-v3.29.3-nr3-ota.bin`
+3. 选 `P4can-unlock-more-v3.29.3-tlssc1-ota.bin`
 4. 点一下，再点一下确认，等进度条走完自动重启
 
 OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
@@ -128,7 +128,7 @@ OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
 ### 完整包 `*-full.bin` —— 首次烧录 / 救砖用
 
 ```bash
-esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-nr3-full.bin
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-tlssc1-full.bin
 ```
 
 整片镜像布局（ESP32-P4 与 S3 不同，`0x0` 是空白 `0xFF`）：
@@ -139,7 +139,7 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 | `0x8000` | 分区表（magic `AA50`） |
 | `0x10000` | 应用镜像（magic `E9`） |
 
-刷完对照页面顶部版本号确认是 `v3.29.3-nr3`。
+刷完对照页面顶部版本号确认是 `v3.29.3-tlssc1`。
 
 ---
 
@@ -159,7 +159,7 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 ## 已知限制
 
 - `gauge` 仍是 503：0xB0 仪表、0x5D9 胎压载荷没解码。
-- EAP 防重启依赖总线上电时序，边界见上文「不能保证什么」。
+- TLSSC 免重启依赖总线上电时序，边界见上文「不能保证什么」。
 - 灯光频闪、后雾灯等帧定义来自静态逆向（证据等级 A），**没有实车抓包对照**；
   动态刹车灯、动力与制动域改动先在封闭场地确认。
 - 分区表、bootloader、flash 参数只能线刷，OTA 无法更改。

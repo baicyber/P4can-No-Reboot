@@ -3,6 +3,15 @@
 本仓库在固件基线 `v3.29.3` 之上做增量，版本号格式 `v3.29.3-<tag>`，
 `tag` 为打包时的日期/批次标识，会写进 `FW_VERSION` 并显示在页面顶部。
 
+## v3.29.3-tlssc1 — 本地（未推送）
+
+- 「TLSSC 免重启」这项功能的所有**对外文案**由 EAP 改称 TLSSC，规避误解：
+  开关名 `EAP anti-restart` → `TLSSC anti-restart`、分区标题 `EAP` → `TLSSC`、
+  中文 `EAP 防重启` → `TLSSC 免重启`（前端字典、状态注释、文档、README）。
+- **只改文案**：内部标识符（`eapNr`、`eapNrOn`/`eapHex` NVS 键、文件名
+  `feifan_eap_norestart.h`、函数名）与上游自带的「Advanced EAP」（a3a 自动转向灯）
+  全部保持不变，行为与 nr3 一致，升级不丢缓存帧。
+
 ## v3.29.3-nr3 — 本地（未推送）
 
 - 修复「首页第一个开关（Nag Killer · 提醒抑制）打不开，重置 NVS 后才能开」：
@@ -13,14 +22,14 @@
 
 ## v3.29.3-nr2 — 本地（未推送）
 
-- EAP 防重启开关改为**默认开启**：变量初值与 NVS 读取默认值都改为 `true`
+- TLSSC 免重启开关改为**默认开启**：变量初值与 NVS 读取默认值都改为 `true`
 - 开关的 NVS key 从 `eapNr` 换成 `eapNrOn`，让已刷过 nr1（NVS 里存过关闭）
   的设备升级后也拿到「开启」这个新默认；之后手动关闭仍会正常持久化
 - 只改开关默认值，补发逻辑、门控、帧上限、状态上报均未动
 
 ## v3.29.3-light1 — 本地（未推送）
 
-两件事：**灯光功能整页换成作者 v3.35.6 的 4 项实现**，以及**EAP 防重启「失败 1」的定位与修复**。
+两件事：**灯光功能整页换成作者 v3.35.6 的 4 项实现**，以及**TLSSC 免重启「失败 1」的定位与修复**。
 
 ### 1. 灯光功能：作者整页移植 · `feifan_lighting.h` + `lighting_reference_pure.h`
 
@@ -45,7 +54,7 @@
 - `/api/lighting/stats` + `/api/lighting/update`，与作者页面同契约
 - 词库 986 → 1005
 
-### 2. EAP 防重启「补发 45 帧 · 失败 1」修复
+### 2. TLSSC 免重启「补发 45 帧 · 失败 1」修复
 
 图里的 `失败 1` 不是帧发不出去：`canTxTwaiTransmit()` 用**非阻塞**
 `xSemaphoreTake(mutex, 0)` 抢 TX 屏障锁，跟爆闪/AP 注入撞上时返回
@@ -168,7 +177,7 @@ byte1 / pulls / frames / txOk / txFail`。上车先看 `rx` 与 `tpl`：`rx=0` �
 
 ## v3.29.3-eap2 — 本地（未推送）
 
-「更多功能」新增第 8 项 **EAP 防重启**（`eapNr`），独立一个开关，落 NVS。
+「更多功能」新增第 8 项 **TLSSC 免重启**（`eapNr`），独立一个开关，落 NVS。
 
 ### 要解决的现象
 
@@ -191,7 +200,7 @@ byte1 / pulls / frames / txOk / txFail`。上车先看 `rx` 与 `tpl`：`rx=0` �
 
 ### 页面
 
-- 更多功能页新增 `EAP` 分区（1 项 · 存入 flash），开关 + 状态行
+- 更多功能页新增 `TLSSC` 分区（1 项 · 存入 flash），开关 + 状态行
 - 状态行分五种：关闭 / 缺前提 / 待首帧 / 车在自己发 / 补发 N 帧，附缓存帧 hex
 - 新增 `feed`：`status.eapNr`（enabled / prereq / cacheValid / cacheHex /
   stockRx / replayOk / replayFail / burst / lastErr）
@@ -201,7 +210,7 @@ byte1 / pulls / frames / txOk / txFail`。上车先看 `rx` 与 `tpl`：`rx=0` �
 
 - `pack_ota.py` 不再在打包时跑 `gen_feifan.py` / `integrate_feifan.py`：
   这两个脚本会按 `data/feifan-menu-data.json` 重建整页（141 项 8 组），
-  把手改的 3 组 7 项 + EAP 分区整块覆盖。页面现在以 `dashboard_source.html` 为准。
+  把手改的 3 组 7 项 + TLSSC 分区整块覆盖。页面现在以 `dashboard_source.html` 为准。
 
 ## v3.29.3-more1122dup2 — 本地（未推送）
 

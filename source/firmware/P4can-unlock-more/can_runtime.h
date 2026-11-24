@@ -694,7 +694,7 @@ static void canTaskTwai(void* arg) {
         case 0x331:
           if (activeCanBIsChassis()) {
             doInjectTlsscRestore(f);
-            // EAP 防重启：记下车端确实在自己发，并缓存补丁后的载荷，
+            // TLSSC 免重启：记下车端确实在自己发，并缓存补丁后的载荷，
             // 供每次上电的补发窗口使用（不改变上面读改重发的行为）。
             feifanEapNrObserve331(f);
           }
@@ -761,7 +761,7 @@ static void canTaskTwai(void* arg) {
     continuousApService(ContApRoute::ChassisB);
     // 灯光发送由 ffLightingTask 统一驱动（见上）。
     tsl9InputServiceCanB();
-    // EAP 防重启：上电窗口内的 0x331 补发（10 Hz，60 s 或补到上限即停）。
+    // TLSSC 免重启：上电窗口内的 0x331 补发（10 Hz，60 s 或补到上限即停）。
     // 车自己开始发 0x331 后自动让位，不参与原厂帧的重发。
     feifanEapNrTick();
     const uint32_t captureNow = (uint32_t)millis();

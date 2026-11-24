@@ -743,10 +743,10 @@ ZH_EXTRA = {
     '0 events': '0 个事件',
 }
 
-# EAP 防重启（更多功能页新增的独立开关）
+# TLSSC 免重启（更多功能页新增的独立开关）
 ZH_EXTRA.update({
     '1 entry · saved in flash': '1 项 · 存入 flash',
-    'EAP anti-restart': 'EAP 防重启',
+    'TLSSC anti-restart': 'TLSSC 免重启',
     '0x331 · keep the patched DAS config on the bus from the first frame after every power-up, so the touchscreen no longer needs a restart. Works only with Banned Car + TLSSC Restore on.':
         '0x331 · 每次上电后从第一帧起就把补丁过的 DAS 配置铺在总线上，'
         '车机不用再重启。仅在「被封车辆」+「TLSSC 恢复」开启时工作。',

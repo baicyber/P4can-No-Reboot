@@ -114,7 +114,7 @@ def rebuild_html():
     say("[1/7] 重建页面并注入 index_html.h")
     # 注意：gen_feifan.py / integrate_feifan.py 会按 data/feifan-menu-data.json
     # 重新生成「更多功能」整页（141 项 8 组），把 dashboard_source.html 里
-    # 手工维护的版面（3 组 7 项 + EAP 防重启）整块覆盖掉。自 v3.29.3-more1122
+    # 手工维护的版面（3 组 7 项 + TLSSC 免重启）整块覆盖掉。自 v3.29.3-more1122
     # 起页面以 dashboard_source.html 为准，这两个生成器只在需要回到数据驱动
     # 版面时手动运行，不参与常规打包。这里只跑两个幂等的补丁脚本。
     for name in ("patch_ota.py", "patch_zh.py"):

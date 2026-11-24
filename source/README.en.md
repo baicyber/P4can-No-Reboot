@@ -19,7 +19,7 @@ actually works end to end.
 
 | | Status | Notes |
 |---|---|---|
-| More features page | ✅ works | 3 groups / **7 entries** + **EAP anti-restart**, bilingual; only what Settings does not already have |
+| More features page | ✅ works | 3 groups / **7 entries** + **TLSSC anti-restart**, bilingual; only what Settings does not already have |
 | Firmware update (OTA) | ✅ works | upload a `.bin` in the browser, A/B partitions, rollback on failure |
 | Local simulator | ✅ works | `sim/p4can-sim.html`, open it directly; three CAN buses up, no module installed |
 | **`/api/feifan/*` endpoints** | ✅ **implemented** | `status` / `config` / `blob` / `action` / `module`; `gauge` still returns 503 |
@@ -75,7 +75,7 @@ external scripts do not start getting 404s — the page simply no longer shows
 them. `q1x` is never written to NVS; the page re-reads `status.s3Config` on
 load, so it cannot show a switch as "on" after a reboot silently reset it.
 
-### The 8th entry: EAP anti-restart (the only switch saved in flash)
+### The 8th entry: TLSSC anti-restart (the only switch saved in flash)
 
 TLSSC Restore (Settings → Banned Car → TLSSC Restore) only does a
 read-modify-retransmit of `0x331`: **the car sends a frame, we patch and echo
@@ -84,7 +84,7 @@ and latches it. If no patched `0x331` is on the bus at that moment, it latches
 "banned" and you have to restart it by hand — which is why the restore used to
 need a touchscreen restart on every power-up.
 
-EAP anti-restart moves the patch in front of that boot-time read:
+TLSSC anti-restart moves the patch in front of that boot-time read:
 
 | Step | What it does |
 |---|---|
@@ -107,7 +107,7 @@ again after the first enable.
 
 **On by default** since v3.29.3-nr2: a fresh install, and an upgrade from an
 older build, both start with the switch on. Turn it off under
-More → EAP anti-restart if you do not want it; that choice is persisted too.
+More → TLSSC anti-restart if you do not want it; that choice is persisted too.
 
 **What it guarantees:** if this controller's CAN comes up before the touchscreen
 reads its config, the touchscreen reads a `SELF_DRIVING` `0x331` and no manual
@@ -189,14 +189,14 @@ underneath states the outcome.
 
 ## What is inside
 
-**More features page** — 3 groups / 7 entries + EAP anti-restart:
+**More features page** — 3 groups / 7 entries + TLSSC anti-restart:
 
 | Group | Count | Contents |
 |---|---|---|
 | Drive assist | 2 | scroll-wheel shift (`0x229`), power boost (`0x334`) |
 | Lighting (standalone page) | 4 | AP manual high beam, high-beam strobe, rear-fog strobe, dynamic brake lights |
 | Body & drivetrain | 3 | off-road, ESP off, service mode |
-| EAP | 1 | EAP anti-restart (`0x331` cached replay, the only persistent switch) |
+| TLSSC | 1 | TLSSC anti-restart (`0x331` cached replay, the only persistent switch) |
 
 The header only renders non-zero buckets, which is now `7 P4 native · 7 usable`.
 
@@ -204,7 +204,7 @@ The 8 native rows that used to live here (`d1a`/`d1b`/`a1a`/`a1b`/`a1c`/`a1d`/
 `a3a`/`a3d`) plus the 3 local-UI rows all duplicated Settings and are gone from
 the page; the mapping stays in `feifan_native.h` for compatibility.
 
-All seven (plus EAP anti-restart) carry **grade A** evidence: bit offsets, masks and command bytes read
+All seven (plus TLSSC anti-restart) carry **grade A** evidence: bit offsets, masks and command bytes read
 straight from the decrypted frame tables or an open-source data table. Nothing
 on this page is inferred from UI naming any more.
 

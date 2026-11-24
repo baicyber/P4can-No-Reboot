@@ -48,9 +48,9 @@ collision with strobe/AP injection returning `ESP_ERR_TIMEOUT`. It is now counte
 as a yield (not a failure) and retried on the next tick; the error code was widened
 from `int8_t` to `int16_t` so it no longer truncates.
 
-**On by default since v3.29.3-nr3.** A fresh install, and an upgrade from nr1,
-both start with EAP anti-restart enabled. Turn it off under More features →
-EAP anti-restart if you do not want it; that choice is persisted too.
+**On by default since v3.29.3-nr2.** A fresh install, and an upgrade from nr1,
+both start with TLSSC anti-restart enabled. Turn it off under More features →
+TLSSC anti-restart if you do not want it; that choice is persisted too.
 
 **nr3 also fixes** the "Nag Killer" toggle on the home page refusing to turn on
 ("Settings could not be saved") when an old or corrupt NAG snapshot is in NVS —
@@ -59,7 +59,7 @@ may now overwrite the bad record, clearing the read-error latch only after a
 successful write, so **no reset is needed**. A genuinely unwritable NVS still
 reports an error.
 
-**How to check.** The status line under "More features → EAP" reads one of: off /
+**How to check.** The status line under "More features → TLSSC" reads one of: off /
 missing prerequisite / waiting for first frame / car is sending it / replayed N
 frames. `status.eapNr` exposes `enabled`, `prereq`, `cacheValid`, `cacheHex`,
 `stockRx`, `replayOk`, `replayFail`, `burst`, `lastErr`.
@@ -78,43 +78,43 @@ packet capture, bilingual UI.
 
 ## Source code
 
-The complete source tree is in [`source/`](source/), matching the `*-nr3-*.bin`
-images at the repository root (v3.29.3 + EAP anti-restart + the full lighting
+The complete source tree is in [`source/`](source/), matching the `*-tlssc1-*.bin`
+images at the repository root (v3.29.3 + TLSSC anti-restart + the full lighting
 page and other changes).
 
 - Firmware sketch: `source/firmware/P4can-unlock-more/P4can-unlock-more.ino`
 - Dashboard: `source/firmware/P4can-unlock-more/dashboard_source.html`
 - Build/packaging scripts: `source/tools/more/` (`pack_ota.py`, `build_sim.py`, …)
-- EAP anti-restart: `source/firmware/P4can-unlock-more/feifan_eap_norestart.h`
+- TLSSC anti-restart: `source/firmware/P4can-unlock-more/feifan_eap_norestart.h`
 - History: `source/CHANGELOG.md`
 
 Source is released under the same terms as upstream; see the root
 [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). The lighting algorithms are derived
 from the author's v3.35.6 reference implementation, with attribution noted in
 the source comments and NOTICE. This branch carries the full feature set; for
-the minimal EAP-only fix sent upstream see
+the minimal TLSSC anti-restart fix sent upstream see
 [upstream PR #15](https://github.com/06066060606060/P4can-universal-unlock/pull/15).
 
 ## Download
 
 | File | Size | Use |
 |---|---|---|
-| `P4can-unlock-more-v3.29.3-nr3-ota.bin` | 1,486,224 B (1.42 MB) | **Everyday updates.** App partition only, rollback on failure |
-| `P4can-unlock-more-v3.29.3-nr3-full.bin` | 33,554,432 B (32 MB) | **First flash / recovery.** Full image with bootloader and partition table |
+| `P4can-unlock-more-v3.29.3-tlssc1-ota.bin` | 1,486,240 B (1.42 MB) | **Everyday updates.** App partition only, rollback on failure |
+| `P4can-unlock-more-v3.29.3-tlssc1-full.bin` | 33,554,432 B (32 MB) | **First flash / recovery.** Full image with bootloader and partition table |
 | `manifest.json` | 1.3 KB | sha256, sizes, partition headroom, build parameters |
 
 Checksums (from `manifest.json`, verified):
 
 | File | sha256 |
 |---|---|
-| OTA | `903d4ca285770e5a1a460b2d469f301b5e47318db53d3fa30515b7af60a6acb2` |
-| full | `0b02a418796029be477e93e651c25c9af524d918684630684b197943429ab50f` |
+| OTA | `4f6afb8309fdb25a6ff7b302d68924d000d9642b37b69ad331d43d81356fd35b` |
+| full | `bb61551f791192d6b1ef16312865e88e5f35bb786014e83dd25c2a074a34a462` |
 
 Verify after download:
 
 ```bash
-sha256sum P4can-unlock-more-v3.29.3-nr3-ota.bin
-# expect: 903d4ca2...6acb2
+sha256sum P4can-unlock-more-v3.29.3-tlssc1-ota.bin
+# expect: 4f6afb83...d35b
 ```
 
 ---
@@ -125,7 +125,7 @@ sha256sum P4can-unlock-more-v3.29.3-nr3-ota.bin
 
 1. Join the P4's hotspot on phone or PC
 2. Open `http://192.168.4.1` → **Settings → Firmware update**
-3. Pick `P4can-unlock-more-v3.29.3-nr3-ota.bin`
+3. Pick `P4can-unlock-more-v3.29.3-tlssc1-ota.bin`
 4. Tap once, confirm, wait for the progress bar to finish and the device to reboot
 
 OTA only writes the app partition — **it cannot change the bootloader, partition
@@ -134,7 +134,7 @@ table or flash parameters**.
 ### `*-full.bin` — first flash / recovery
 
 ```bash
-esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-nr3-full.bin
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-tlssc1-full.bin
 ```
 
 Full image layout (ESP32-P4 differs from S3; `0x0` is blank `0xFF`):
@@ -145,7 +145,7 @@ Full image layout (ESP32-P4 differs from S3; `0x0` is blank `0xFF`):
 | `0x8000` | partition table (magic `AA50`) |
 | `0x10000` | app image (magic `E9`) |
 
-After flashing, confirm the page header reads `v3.29.3-nr3`.
+After flashing, confirm the page header reads `v3.29.3-tlssc1`.
 
 ---
 
@@ -165,7 +165,7 @@ Board: Waveshare ESP32-P4-WIFI6, rev3.2, 32 MB flash, `app5M_fat24M_32MB` scheme
 ## Known limitations
 
 - `gauge` still returns 503: 0xB0 cluster and 0x5D9 tire-pressure payloads are undecoded.
-- EAP anti-restart depends on bus power-up timing; see "Guarantee" above.
+- TLSSC anti-restart depends on bus power-up timing; see "Guarantee" above.
 - Light strobe / rear fog frame definitions come from static reverse engineering
   (grade A), **no real-car capture comparison**; verify dynamic brake light and
   power/brake-domain changes in a closed area first.

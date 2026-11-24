@@ -146,7 +146,7 @@ MOCK = r"""
        applied 只列页面上真实可用的 P4 原生项；模块项在无模块时回 stored/module-absent。
        q1x = SUPER_3CAN 移植项，固件自己发帧。 */
     /* 页面上只剩设置页没有的 7 项，全部是 SUPER_3CAN 移植来的原生帧。
-       eapNr 是单独一个常驻开关（EAP 防重启），不参与 7 项分组计数。 */
+       eapNr 是单独一个常驻开关（TLSSC 免重启），不参与 7 项分组计数。 */
     var FF_NATIVE=['q1a','q1b','q1c','q1d','q1e','q1f','q1g','eapNr'];
     var FF_NATIVE_MAP={};for(var ni=0;ni<FF_NATIVE.length;ni++)FF_NATIVE_MAP[FF_NATIVE[ni]]=1;
     /* 会话级原生项不进权威回显，与固件 feifanNativeConfigJson() 一致 */
@@ -179,7 +179,7 @@ MOCK = r"""
         strobe:{auth:!!SIM.cfg.q1a,armed:!!SIM.cfg.q1a,hold:!!SIM.cfg.q1b,tpl:true,synth:false,
                 rx:413,ckBad:0,ctr:6,dir:0,byte1:0x06,pulls:7,frames:24,
                 txOk:SIM.cfg.q1a?24:0,txFail:0},
-        /* EAP 防重启：开关落 NVS，缓存帧按固件同一套语义回显 */
+        /* TLSSC 免重启：开关落 NVS，缓存帧按固件同一套语义回显 */
         eapNr:{enabled:!!SIM.cfg.eapNr,
                prereq:!!(SIM.cfg.banned&&SIM.cfg.tlRestore),
                banned:!!SIM.cfg.banned,restore:!!SIM.cfg.tlRestore,

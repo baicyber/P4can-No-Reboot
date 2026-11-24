@@ -206,7 +206,7 @@ void setup() {
   nvsSchemaRead();
   (void)(featureConfigMigrateToSchema2() && featureConfigMigrateToSchema3());
   featureCfgLoad();
-  // EAP 防重启：在 CAN 初始化之前把开关和缓存的 0x331 读回来。
+  // TLSSC 免重启：在 CAN 初始化之前把开关和缓存的 0x331 读回来。
   // 顺序很重要 —— 开关必须在第一帧 0x331 到达前就位，否则本上电周期
   // 的补发窗口等于没开（这也是「每轮上电都要重启车机」的根因之一）。
   feifanEapNrLoad();

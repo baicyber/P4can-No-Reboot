@@ -1,4 +1,4 @@
-# Fix: EAP-induced MCU reboot on every power cycle (`0x331` cached replay)
+# Fix: TLSSC-restore-induced MCU reboot on every power cycle (`0x331` cached replay)
 
 > Proposed upstream patch for **P4can-universal-unlock v3.29.3**.
 > Base: `06066060606060/P4can-universal-unlock` @ `v3.29.3`.
