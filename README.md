@@ -1,6 +1,6 @@
 # P4can-No-Reboot
 
-> 修好一件小事：**开了「被封车辆 + TLSSC 恢复」之后，车机不用每轮上电都人工重启一次了。**
+> 修好一件小事：**开了「被封车辆 + TLSSC 恢复」之后，车机不用每轮上电都自动重启一次了。**
 
 这是给 **Waveshare ESP32-P4-C6 WiFi6 3×TWAI**（32 MB flash）板子的特斯拉 CAN 工具固件成品包，
 基于 [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock) `v3.29.3`。
