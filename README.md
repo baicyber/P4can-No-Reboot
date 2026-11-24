@@ -4,7 +4,7 @@
 
 这是给 **Waveshare ESP32-P4 WiFi6 3×TWAI**（32 MB flash）板子的特斯拉 CAN 工具固件成品包，
 基于 [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock) `v3.29.3`。
-本仓库**只发布编译好的固件**（`.bin`），不含源码。
+根目录是**编译好的固件**（`.bin`），完整源码在 [`source/`](source/) 子目录。
 
 **界面默认中文**，右上角语言开关可切英文。
 
@@ -66,6 +66,21 @@ ESP 关闭/维护模式）、网页 OTA 升级、Wi-Fi 中继、抓包页、中�
 带出来的附带改动，不是本仓库的主要目的。
 
 ---
+
+## 源码
+
+完整源码在 [`source/`](source/) 子目录，与根目录的 `*-nr1-*.bin` 对应（v3.29.3 + EAP 免重启 + 灯光整页等改动）。
+
+- 固件 sketch：`source/firmware/P4can-unlock-more/P4can-unlock-more.ino`
+- 前端页面：`source/firmware/P4can-unlock-more/dashboard_source.html`
+- 打包/构建脚本：`source/tools/more/`（`pack_ota.py`、`build_sim.py` 等）
+- EAP 免重启实现：`source/firmware/P4can-unlock-more/feifan_eap_norestart.h`
+- 变更历史：`source/CHANGELOG.md`
+
+源码按上游同等方式开源，归属与授权见根目录 [`LICENSE`](LICENSE) 与 [`NOTICE`](NOTICE)。
+其中灯光算法等取自作者 v3.35.6 参考实现，相关归属在源码注释与 NOTICE 中逐项标注。
+本分支是功能集合分支；若只想看提交给上游的最小 EAP 修复，见
+[upstream PR #15](https://github.com/06066060606060/P4can-universal-unlock/pull/15)。
 
 ## 下载
 

@@ -6,7 +6,8 @@
 A ready-to-flash Tesla CAN toolkit firmware for the **Waveshare ESP32-P4 WiFi6
 3×TWAI** board (32 MB flash), based on
 [P4can-universal-unlock](https://github.com/06066060606060/P4can-universal-unlock)
-`v3.29.3`. This repository ships **compiled firmware only** (`.bin`) — no source.
+`v3.29.3`. The root holds the **compiled firmware** (`.bin`); the complete
+source tree is in the [`source/`](source/) subdirectory.
 
 **UI defaults to Chinese**; the language switch in the top-right toggles English.
 
@@ -63,6 +64,25 @@ v3.35.6, four entries), More features page, browser OTA update, Wi-Fi relay,
 packet capture, bilingual UI.
 
 ---
+
+## Source code
+
+The complete source tree is in [`source/`](source/), matching the `*-nr1-*.bin`
+images at the repository root (v3.29.3 + EAP anti-restart + the full lighting
+page and other changes).
+
+- Firmware sketch: `source/firmware/P4can-unlock-more/P4can-unlock-more.ino`
+- Dashboard: `source/firmware/P4can-unlock-more/dashboard_source.html`
+- Build/packaging scripts: `source/tools/more/` (`pack_ota.py`, `build_sim.py`, …)
+- EAP anti-restart: `source/firmware/P4can-unlock-more/feifan_eap_norestart.h`
+- History: `source/CHANGELOG.md`
+
+Source is released under the same terms as upstream; see the root
+[`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). The lighting algorithms are derived
+from the author's v3.35.6 reference implementation, with attribution noted in
+the source comments and NOTICE. This branch carries the full feature set; for
+the minimal EAP-only fix sent upstream see
+[upstream PR #15](https://github.com/06066060606060/P4can-universal-unlock/pull/15).
 
 ## Download
 
