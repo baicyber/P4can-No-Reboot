@@ -21,7 +21,7 @@
 > [!WARNING]
 > **只适用于 32 MB Flash 的板子**（微雪 ESP32-P4-C6-WIFI6 / rev3.2）。
 > **16 MB 版本刷这个包会直接变砖** —— 分区表 `app5M_fat24M_32MB` 与 16 MB flash 不匹配，
-> 烧进去连 bootloader 都起不来，只能用 USB 重新救回来。
+> 烧进去连 bootloader 都起不来，只能用 USB 重新救回来。源码原理都在，自己让AI适配
 
 ---
 
