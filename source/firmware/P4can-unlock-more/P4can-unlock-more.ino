@@ -73,6 +73,7 @@
 #include "continuous_ap_fsm_pure.h"
 #include "p4can_core_state.h"
 #include "p4can_forward.h"
+#include "can_gpio_runtime.h"
 #include "can_usb_logger.h"
 #include "can_research_capture.h"
 #include "driver_monitor_capture.h"
@@ -80,6 +81,7 @@
 #include "can_core.h"
 #include "can_busoff_persistence.h"
 #include "vehicle_logic.h"
+#include "automatic_shift/gear_shift_runtime.h"
 #include "continuous_ap_runtime.h"
 #include "web_api.h"
 #include "can_runtime.h"
@@ -195,6 +197,19 @@ void setup() {
     return;
   }
 
+  // CAN GPIO mapping is read once here, before any TWAI install. A corrupt or
+  // unreadable record leaves p4CanGpioValid=false; p4CanInstall() then refuses
+  // every bus and we fall back to a Wi-Fi/dashboard-only recovery session so
+  // the pin map can be repaired in Settings > CAN GPIO.
+  (void)p4CanGpioLoadAtBoot();
+  if (!p4CanGpioValid) {
+    P4CAN_SERIAL_PRINTF("[P4-CAN] %s; WiFi/dashboard recovery only\n", p4CanGpioLastError);
+    wifiApBootStart();
+    BaseType_t retWebGpio = xTaskCreatePinnedToCore(webTask, "web", 8192, nullptr, 1, &webTaskHandle, 0);
+    if (retWebGpio != pdPASS) restartP4CanSafely();
+    return;
+  }
+
   P4CAN_SERIAL_PRINTF("Vehicle Profile=%s CAN A=%s CAN B=%s Turn=%s\n",
                 vehicleProfileName(activeVehicleProfile),
                 activeProfileCanAName(),
@@ -206,6 +221,8 @@ void setup() {
   nvsSchemaRead();
   (void)(featureConfigMigrateToSchema2() && featureConfigMigrateToSchema3());
   featureCfgLoad();
+  // 自动换挡（SmartShift）：默认执行关闭，配置在 CAN 初始化前读回。
+  gearShiftConfigLoad();
   // TLSSC 免重启：在 CAN 初始化之前把开关和缓存的 0x331 读回来。
   // 顺序很重要 —— 开关必须在第一帧 0x331 到达前就位，否则本上电周期
   // 的补发窗口等于没开（这也是「每轮上电都要重启车机」的根因之一）。
@@ -274,6 +291,8 @@ void setup() {
   canInitTime = millis();
   bootCaptureMarkOnce(&bootCapCanInitDoneMs);
   if (!recoveryStartCanTasks()) restartP4CanSafely();
+  if (xTaskCreatePinnedToCore(gearShiftTask, "autoShift", 12288, nullptr, 2, nullptr, 0) != pdPASS)
+    restartP4CanSafely();
   bootCaptureMarkOnce(&bootCapCanTasksStartedMs);
 
   BaseType_t retSup = xTaskCreatePinnedToCore(canSupervisorTask, "canSup", 6144, nullptr, 3, &canSupervisorHandle, 0);

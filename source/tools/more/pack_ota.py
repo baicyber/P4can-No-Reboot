@@ -159,7 +159,7 @@ def sync_sketch(tag):
             if (not dst.exists()) or not _same(dst, f):
                 shutil.copy2(f, dst)
                 copied += 1
-    for sub in ("assets", "fonts"):
+    for sub in ("assets", "fonts", "automatic_shift"):
         s = SRC / sub
         if s.is_dir():
             d = SKETCH / sub

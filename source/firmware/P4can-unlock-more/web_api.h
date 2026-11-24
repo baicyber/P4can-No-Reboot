@@ -5865,7 +5865,114 @@ static void httpResetRuntimeStats() {
 
 // 更多功能页面后端。放在这里是因为它要复用上面已定义的 NAG / ISA / PedalMap
 // 设置路径，同时 webTask 又要能注册它的路由。
+// CAN GPIO configuration: boot-only pins, complete checked record and no hot apply.
+static String p4CanGpioMapJson(const P4CanGpioMap &map) {
+  String json = "[";
+  for (unsigned bus = 0; bus < 3; ++bus) {
+    if (bus) json += ',';
+    char row[40];
+    snprintf(row, sizeof(row), "{\"tx\":%u,\"rx\":%u}", map.tx[bus], map.rx[bus]);
+    json += row;
+  }
+  json += ']';
+  return json;
+}
+static String p4CanGpioAllowedPinsJson() {
+  String json = "[";
+  bool first = true;
+  for (unsigned pin = 0; pin < P4_CAN_GPIO_COUNT; ++pin) {
+    if (!p4CanGpioPinAllowedPure(pin)) continue;
+    if (!first) json += ',';
+    first = false;
+    char value[4];
+    snprintf(value, sizeof(value), "%u", pin);
+    json += value;
+  }
+  json += ']';
+  return json;
+}
+static bool p4CanGpioCanStopped() {
+  if (__atomic_load_n(&canMaintenanceStopped, __ATOMIC_ACQUIRE)) return true;
+  for (unsigned bus = 0; bus < 3; ++bus) if (p4CanHandles[bus]) return false;
+  return true;
+}
+static void httpCanGpioFailure(int status, const char *error) {
+  String json;
+  JsonWriterArduino jw(json);
+  jw.boolean("ok", false);
+  jw.string("error", error);
+  jw.boolean("canStopped", p4CanGpioCanStopped());
+  jw.boolean("rebootRequired", canMaintenanceActive() || !p4CanGpioValid);
+  jw.finish();
+  server.send(status, "application/json", json);
+}
+static void httpCanGpioStatus() {
+  P4CanGpioMap saved{};
+  const P4CanGpioSavedState state = p4CanGpioReadSaved(saved);
+  const bool savedValid = state == P4_GPIO_VALID || state == P4_GPIO_MISSING;
+  const P4CanGpioMap active = p4CanGpioActiveMap();
+  const char *error = p4CanGpioLastError;
+  if (state == P4_GPIO_CORRUPT) error = "Stored CAN GPIO record is invalid";
+  else if (state == P4_GPIO_READ_ERROR) error = "CAN GPIO storage read failed";
+  else if (!p4CanGpioValid && !*error) error = "Saved CAN GPIO mapping requires reboot";
+  String json;
+  json.reserve(460);
+  JsonWriterArduino jw(json);
+  jw.boolean("ok", true);
+  jw.boolean("valid", p4CanGpioValid);
+  if (p4CanGpioValid) jw.raw("active", p4CanGpioMapJson(active));
+  else jw.raw("active", "null");
+  if (savedValid) jw.raw("saved", p4CanGpioMapJson(saved));
+  else jw.raw("saved", "null");
+  jw.raw("defaults", p4CanGpioMapJson(p4CanGpioDefaultsPure()));
+  jw.raw("allowedPins", p4CanGpioAllowedPinsJson());
+  jw.boolean("rebootRequired", canMaintenanceActive() || !p4CanGpioValid ||
+      !savedValid || !p4CanGpioMapsEqualPure(active, saved));
+  jw.boolean("canStopped", p4CanGpioCanStopped());
+  jw.string("error", error);
+  jw.finish();
+  server.send(200, "application/json", json);
+}
+static void httpCanGpioSet() {
+  static const char *const keys[] = {"tx1", "rx1", "tx2", "rx2", "tx3", "rx3"};
+  P4CanGpioMap candidate{};
+  for (unsigned i = 0; i < 6; ++i) {
+    if (!server.hasArg(keys[i])) {
+      httpCanGpioFailure(400, "All six CAN GPIO values are required");
+      return;
+    }
+    const String raw = server.arg(keys[i]);
+    uint8_t pin;
+    if (raw.length() != strlen(raw.c_str()) || !p4CanGpioParsePinPure(raw.c_str(), pin)) {
+      httpCanGpioFailure(400, "CAN GPIO values must be ASCII decimal integers");
+      return;
+    }
+    if (i & 1u) candidate.rx[i / 2] = pin;
+    else candidate.tx[i / 2] = pin;
+  }
+  if (!p4CanGpioMapValidPure(candidate)) {
+    httpCanGpioFailure(400, "Use six unique GPIOs in 0-54 not already used by C6 or USB");
+    return;
+  }
+  // The irreversible maintenance request parks CAN even on handshake failure.
+  // Never write/reboot until confirmed; the UI can retry or explicitly reboot.
+  if (!prepareCanForMaintenance()) {
+    p4CanGpioLastError = "CAN stop not confirmed; CAN may remain stopped; reboot required";
+    httpCanGpioFailure(503, p4CanGpioLastError);
+    return;
+  }
+  if (!p4CanGpioPersist(candidate)) {
+    httpCanGpioFailure(500, p4CanGpioLastError);
+    return;
+  }
+  server.send(200, "application/json", "{\"ok\":true,\"rebooting\":true}");
+  delay(250);
+  restartP4CanSafely();
+}
+// End CAN GPIO configuration.
+
 #include "feifan_api.h"
+#include "automatic_shift/gear_shift_web.h"
 
 static void webTask(void *arg) {
   P4CAN_SERIAL_PRINTLN("WiFi: Starting AP...");
@@ -5894,6 +6001,9 @@ static void webTask(void *arg) {
   server.on("/api/system/factory-reset", HTTP_POST, httpFactoryReset);
   server.on("/api/system/reset-nvs-keep-ble", HTTP_POST, httpResetNvsPreserveS3xyBle);
   server.on("/api/system/reboot", HTTP_POST, httpRebootP4Can);
+  // CAN GPIO repair channel must stay reachable in setup / GPIO-fault mode.
+  server.on("/api/system/can-gpio", HTTP_GET, httpCanGpioStatus);
+  server.on("/api/system/can-gpio", HTTP_POST, httpCanGpioSet);
   server.on("/api/wifi/status", HTTP_GET, httpWifiStatus);
   server.on("/api/wifi/apply", HTTP_POST, httpWifiApply);
   server.on("/api/wifi/uplink", HTTP_GET, httpWifiUplink);
@@ -5902,6 +6012,8 @@ static void webTask(void *arg) {
   server.on("/update", HTTP_POST, httpOtaFinish, httpOtaUpload);
 
   if (!vehicleProfileSetupMode && !vehicleProfileNvsError) {
+    server.on("/api/smartshift/stats", HTTP_GET, httpGearShiftStatus);
+    server.on("/api/smartshift/update", HTTP_POST, httpGearShiftConfig);
     server.on("/api/snapshot", HTTP_GET, httpSnapshot);
     if (activeProfileNagSupported()) {
       server.on("/api/nag/config", HTTP_GET, httpNagConfig);

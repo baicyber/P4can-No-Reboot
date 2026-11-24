@@ -27,6 +27,8 @@ static void invalidateCanTxStateInternal(uint8_t invalidatedBusMask) {
   const bool barrierLocked = canTxBarrierMutex &&
                              xSemaphoreTake(canTxBarrierMutex, portMAX_DELAY) == pdTRUE;
   if (barrierLocked) {
+    // 自动换挡：CAN 恢复时清空观察者/模板/候选，但保留已消耗的刹车 epoch。
+    gearShiftInvalidateInputs();
     const uint8_t preserved = canTxPreservedFreshMaskPure(
         canTxBarrierState.freshMask, invalidatedBusMask, physicalFreshMask);
     canTxBarrierInvalidatePreservePure(canTxBarrierState, preserved);
@@ -361,6 +363,8 @@ static void p4CanDrainExtra() {
     canUsbObserve(frame.bus, frame.can_id & 0x1fffffffUL,
         ((frame.can_id & 0x80000000UL) ? 1 : 0) |
         ((frame.can_id & 0x40000000UL) ? 2 : 0), frame.can_dlc, frame.data);
+    gearHintDisplayObserveRaw(frame.bus, frame.can_id & 0x1fffffffUL, frame.can_dlc,
+        (frame.can_id & 0x80000000UL) != 0, (frame.can_id & 0x40000000UL) != 0, frame.data);
     if ((frame.can_id & 0xc0000000UL) != 0) continue;
     if (p4CanOnline[p4CanBusExtra()]) p4CanExtraFresh = true;
     researchCaptureObserve(RESEARCH_CAPTURE_BUS_EXTRA, frame.can_id, frame.can_dlc, frame.data);
@@ -462,6 +466,8 @@ static void canTaskNativeA(void* arg) {
         canUsbObserve(p4CanBusA(), raw.can_id & ((raw.can_id & 0x80000000UL) ? 0x1FFFFFFFUL : 0x7FFUL),
             ((raw.can_id & 0x80000000UL) ? 1 : 0) | ((raw.can_id & 0x40000000UL) ? 2 : 0),
             raw.can_dlc, raw.data);
+        gearHintDisplayObserveRaw(raw.bus, raw.can_id & 0x1fffffffUL, raw.can_dlc,
+            (raw.can_id & 0x80000000UL) != 0, (raw.can_id & 0x40000000UL) != 0, raw.data);
         batch++;
       }
       if (batch == 0) break;
@@ -610,6 +616,7 @@ static void canTaskTwai(void* arg) {
       rxBudget++;
       canUsbObserve(p4CanBusB(), f.identifier, (f.extd ? 1 : 0) | (f.rtr ? 2 : 0),
                     f.data_length_code, f.data);
+      gearHintDisplayObserveRaw(p4CanBusB(), f.identifier, f.data_length_code, f.extd, f.rtr, f.data);
       canTaskDiagnosticsEnterStagePure(canTaskTwaiDiagnostics,
                                        CAN_TASK_STAGE_PROCESS,
                                        (uint32_t)millis());

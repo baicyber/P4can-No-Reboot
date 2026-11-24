@@ -3,6 +3,24 @@
 本仓库在固件基线 `v3.29.3` 之上做增量，版本号格式 `v3.29.3-<tag>`，
 `tag` 为打包时的日期/批次标识，会写进 `FW_VERSION` 并显示在页面顶部。
 
+## v3.29.3-shift1 — 本地（未推送）
+
+参考上游 `P4-CAN-Universal-v3.35.3` 新增两项设置页功能：
+
+- **CAN GPIO**：设置页可配置三条 CAN 的 TX/RX 引脚（GPIO 0–54，排除 C6/USB 占用脚，
+  六脚唯一、带 CRC 与回读校验的 16 字节记录）。NVS 命名空间 `p4gpio`，
+  只在上电时加载一次并在 TWAI 安装前生效；记录损坏/读取失败则 fail-closed，
+  只留 Wi-Fi/设置页供修复，重启生效、绝不热切换。新增
+  `GET/POST /api/system/can-gpio`（修复通道在 setup/GPIO 故障模式下也可用）。
+- **SmartShift 智能换挡**（来自 `kl79613/P4Can-automatic-shifting`，MIT，
+  见 `automatic_shift/` 与 `SMARTSHIFT.md`）：V12 雷达（`0x229`）/ V13–14 视觉
+  （`0x678`）候选，10 ms 独立任务，需刹车确认，一次刹车最多一次请求；
+  **执行默认关闭**，nvs `features/autoShiftCfg`。含安全带、车速、车门、
+  转向、冷却等完整门控。新增 `GET/POST /api/smartshift/stats|update`。
+  Model YL 不支持、P 挡转向仅 Model Y Legacy 标定；未做实车验证。
+- 前端新增两个设置面板与中英文案；`pack_ota.py` 同步逻辑加入 `automatic_shift/` 子目录。
+- 编译 exit 0 / 0 warning，镜像内嵌页面与源码逐字节一致。
+
 ## v3.29.3-tlssc1 — 本地（未推送）
 
 - 「TLSSC 免重启」这项功能的所有**对外文案**由 EAP 改称 TLSSC，规避误解：

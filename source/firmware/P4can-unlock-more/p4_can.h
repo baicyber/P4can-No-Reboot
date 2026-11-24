@@ -2,14 +2,18 @@
 #include "driver/twai.h"
 #include "soc/soc_caps.h"
 #include "pin_config.h"
+#include "can_gpio_pure.h"
 #if !defined(CONFIG_IDF_TARGET_ESP32P4) || SOC_TWAI_CONTROLLER_NUM < 3
 #error "This firmware requires ESP32-P4 with three TWAI controllers"
 #endif
 
 // These identities are physical and never change with the vehicle profile.
 enum P4CanBus : uint8_t { P4_BODY = 0, P4_CHASSIS = 1, P4_PARTY = 2, P4_CAN_COUNT = 3 };
-static constexpr int p4CanTxPins[] = {CAN_BODY_TX, CAN_CHASSIS_TX, CAN_PARTY_TX};
-static constexpr int p4CanRxPins[] = {CAN_BODY_RX, CAN_CHASSIS_RX, CAN_PARTY_RX};
+// CAN GPIO mapping is loaded once at boot from NVS (Settings > CAN GPIO).
+// Mutable so the saved pin map can be applied before TWAI installation.
+static int p4CanTxPins[] = {CAN_BODY_TX, CAN_CHASSIS_TX, CAN_PARTY_TX};
+static int p4CanRxPins[] = {CAN_BODY_RX, CAN_CHASSIS_RX, CAN_PARTY_RX};
+static bool p4CanGpioValid = true;
 static const char *const p4CanNames[] = {"BODY", "CHASSIS", "PARTY"};
 static twai_handle_t p4CanHandles[P4_CAN_COUNT] = {};
 static volatile bool p4CanOnline[P4_CAN_COUNT] = {};
@@ -59,6 +63,12 @@ struct CanFrame {
 
 static bool p4CanInstall(uint8_t bus, bool passive, uint32_t txQueueLength = 32) {
   if (bus >= P4_CAN_COUNT || p4CanHandles[bus]) return false;
+  // A corrupt CAN GPIO record must fail closed: no TWAI on any bus. The
+  // dashboard remains available so the mapping can be repaired.
+  if (!p4CanGpioValid) {
+    p4CanInitError[bus] = ESP_ERR_INVALID_STATE;
+    return false;
+  }
   twai_general_config_t g = TWAI_GENERAL_CONFIG_DEFAULT_V2(
       bus, (gpio_num_t)p4CanTxPins[bus], (gpio_num_t)p4CanRxPins[bus],
       passive ? TWAI_MODE_LISTEN_ONLY : TWAI_MODE_NORMAL);
