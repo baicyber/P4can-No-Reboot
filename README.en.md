@@ -27,6 +27,28 @@ source tree is in the [`source/`](source/) subdirectory.
 
 ---
 
+## What's new (v3.29.3-alight-shift-gpio-rebootfix)
+
+**[中文](README.md) · [Français](README.fr.md)**
+
+The latest build is on the [Releases page](https://github.com/baicyber/P4can-No-Reboot/releases/latest), tag `v3.29.3-alight-shift-gpio-rebootfix`. The `*-tlssc1-*.bin` files kept at the repository root are the previous stable rollback build.
+
+On top of TLSSC anti-restart, this release adds:
+
+- **Full lighting page upgrade**: replaced the old lighting code with the author's v3.35.8 official `lighting` module (high-beam strobe / manual high beam / rear fog flash, stalk-gesture triggered).
+- **SmartShift automatic shifting**: ported from the author's v3.35.8, off by default, enabled in settings; brake-confirmed.
+- **CAN GPIO pin remap**: change CAN TX/RX pins in settings (defaults 20/21, 22/23, 26/27); a corrupt NVS record falls back to default pins, avoiding "can't connect" after flashing.
+- **Anti-restart fix (rebootfix)**: fixes head-unit reboot after sleep/wake and random reboot in P. Replay/echo now take the lock once: read epoch -> check TX barrier -> send, removing the race with the 5 ms lighting task; the replay window re-arms after sleep/wake; Model Y L does not replay the unverified 0x331 route. Vehicle test: no power-on reboot, no random reboot.
+- **Connection status & lighting switch fix**: opening the lighting and other panels no longer falsely reports "disconnected"; the lighting switch now turns on and stays on.
+- **Open-source project URL** updated to `P4can-No-Reboot`.
+
+> [!NOTE]
+> This build includes code ported from the author's internal source: **only the finished `.bin` files are published, this source is not public**. The minimal TLSSC anti-restart fix is still in [upstream PR #15](https://github.com/06066060606060/P4can-universal-unlock/pull/15).
+
+See [Download](#download) below; after flashing, confirm the version shown at the top of the page.
+
+---
+
 ## The bug it fixes
 
 **Symptom.** With "Banned vehicle + TLSSC restore" on, the MCU had to be rebooted
@@ -80,14 +102,14 @@ cycle still needs a manual reboot. That is bus timing, not something software ca
 recover. Judge the real car by `stockRx` / `replayOk` / `cacheHex`.
 
 **Also included** (incidental to the base firmware): lighting page (author's
-v3.35.6, four entries), More features page, browser OTA update, Wi-Fi relay,
+v3.35.8), More features page, browser OTA update, Wi-Fi relay,
 packet capture, bilingual UI.
 
 > [!NOTE]
-> The experimental `shift1` build (CAN GPIO pin remap + SmartShift) was **rolled
-> back** from release due to connectivity-compatibility reports. The current firmware
-> at the repository root is `v3.29.3-tlssc1`. The experimental source is still kept in
-> `source/` for reference but flashing it is not recommended — use the root images.
+> The earlier experimental `shift1` build was rolled back over connectivity reports.
+> SmartShift and CAN GPIO are now back in the latest
+> `v3.29.3-alight-shift-gpio-rebootfix` (corrupt GPIO NVS records fall back to default
+> pins, fixing "can't connect"). Use the latest build from Releases.
 
 ---
 
@@ -112,24 +134,32 @@ the minimal TLSSC anti-restart fix sent upstream see
 
 ## Download
 
+**Latest (recommended)** — download from the [Releases page](https://github.com/baicyber/P4can-No-Reboot/releases/latest):
+
 | File | Size | Use |
 |---|---|---|
-| `P4can-unlock-more-v3.29.3-tlssc1-ota.bin` | 1,486,240 B (1.42 MB) | **Everyday updates.** App partition only, rollback on failure |
-| `P4can-unlock-more-v3.29.3-tlssc1-full.bin` | 33,554,432 B (32 MB) | **First flash / recovery.** Full image with bootloader and partition table |
-| `manifest.json` | 1.3 KB | sha256, sizes, partition headroom, build parameters |
+| `P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-ota.bin` | 1,521,920 B (1.45 MB) | **Everyday updates.** App partition only, rollback on failure |
+| `P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-full.bin` | 33,554,432 B (32 MB) | **First flash / recovery.** Full image with bootloader and partition table |
 
-Checksums (from `manifest.json`, verified):
+Checksums (latest, verified):
 
 | File | sha256 |
 |---|---|
-| OTA | `4f6afb8309fdb25a6ff7b302d68924d000d9642b37b69ad331d43d81356fd35b` |
-| full | `bb61551f791192d6b1ef16312865e88e5f35bb786014e83dd25c2a074a34a462` |
+| OTA | `51936e140681da03968bfacccaed070b80e7ffd7b780a712db8ea0f5811c0933` |
+| full | `b19cb1226bc9c8be74f010600503f4253197b04ac3f626a78387794225f00165` |
+
+**Previous stable rollback** (repository root):
+
+| File | Size | sha256 |
+|---|---|---|
+| `P4can-unlock-more-v3.29.3-tlssc1-ota.bin` | 1,486,240 B | `4f6afb8309fdb25a6ff7b302d68924d000d9642b37b69ad331d43d81356fd35b` |
+| `P4can-unlock-more-v3.29.3-tlssc1-full.bin` | 33,554,432 B | `bb61551f791192d6b1ef16312865e88e5f35bb786014e83dd25c2a074a34a462` |
 
 Verify after download:
 
 ```bash
-sha256sum P4can-unlock-more-v3.29.3-tlssc1-ota.bin
-# expect: 4f6afb83...d35b
+sha256sum P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-ota.bin
+# expect: 51936e14...1c0933
 ```
 
 ---
@@ -149,7 +179,7 @@ table or flash parameters**.
 ### `*-full.bin` — first flash / recovery
 
 ```bash
-esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-tlssc1-full.bin
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-full.bin
 ```
 
 Full image layout (ESP32-P4 differs from S3; `0x0` is blank `0xFF`):
@@ -229,4 +259,4 @@ for the license of this project's additions.
 
 ---
 
-[中文](README.md)
+[中文](README.md) · [Français](README.fr.md)

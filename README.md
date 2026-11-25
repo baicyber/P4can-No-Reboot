@@ -25,6 +25,28 @@
 
 ---
 
+## 最新版更新（v3.29.3-alight-shift-gpio-rebootfix）
+
+**[English](README.en.md) · [Français](README.fr.md)**
+
+最新成品发布在 [Releases 页面](https://github.com/baicyber/P4can-No-Reboot/releases/latest)，tag `v3.29.3-alight-shift-gpio-rebootfix`。仓库根目录保留的 `*-tlssc1-*.bin` 是上一个稳定回退版，供按需回退。
+
+本版在 TLSSC 免重启之上新增：
+
+- **灯光功能整页升级**：换用作者 v3.35.8 官方 lighting 模块（远光频闪 / 手动远光 / 后雾灯爆闪，拨杆手势触发），替换旧的灯光实现。
+- **SmartShift 自动换挡**：从作者 v3.35.8 移植，默认关闭，设置页可开；带刹车确认。
+- **CAN GPIO 改针脚**：设置页可改 CAN TX/RX 引脚（默认 20/21、22/23、26/27）；NVS 记录损坏时自动回退默认针脚，避免「刷完连不上」。
+- **免重启再修复（rebootfix）**：修复休眠唤醒后车机重启与 P 挡随机重启。补发/echo 改为单次持锁读 epoch → 判 TX 屏障 → 发送，消除与每 5 ms 灯光任务的竞态；休眠唤醒后重新打开补发窗口；Model Y L 不补发未经确认的 0x331 路由。实车测试：不上电重启、不随机重启。
+- **连接状态与灯光开关修复**：打开灯光等面板不再误报「未连接」；灯光开关可正常打开并保持。
+- **开源项目地址**更新为 `P4can-No-Reboot`。
+
+> [!NOTE]
+> 本版含从作者内测源码移植的功能，**只发布成品 bin，不公开这部分源码**。TLSSC 免重启的最小修复仍见 [upstream PR #15](https://github.com/06066060606060/P4can-universal-unlock/pull/15)。
+
+下载与校验见下方 [下载](#下载) 一节；刷完请对照页面顶部版本号确认。
+
+---
+
 ## 它修复了什么
 
 ### 现象
@@ -79,7 +101,7 @@ NVS 真不可写时仍会报错，不会掩盖真故障。
 
 ### 顺带带来的能力
 
-固件同时带：灯光功能整页（作者 v3.35.6 四项）、更多功能页（滚轮换挡/动力狂暴/越野/
+固件同时带：灯光功能整页（作者 v3.35.8）、更多功能页（滚轮换挡/动力狂暴/越野/
 ESP 关闭/维护模式）、网页 OTA 升级、Wi-Fi 中继、抓包页、中英双语。这些是随基线一起
 带出来的附带改动，不是本仓库的主要目的。
 
@@ -102,24 +124,32 @@ ESP 关闭/维护模式）、网页 OTA 升级、Wi-Fi 中继、抓包页、中�
 
 ## 下载
 
+**最新版（推荐）** 在 [Releases 页面](https://github.com/baicyber/P4can-No-Reboot/releases/latest) 下载：
+
 | 文件 | 大小 | 用途 |
 |---|---|---|
-| `P4can-unlock-more-v3.29.3-tlssc1-ota.bin` | 1,486,240 B (1.42 MB) | **平时升级用**。只写 app 分区，失败可回滚 |
-| `P4can-unlock-more-v3.29.3-tlssc1-full.bin` | 33,554,432 B (32 MB) | **首次烧录 / 救砖用**。整片镜像，含 bootloader 和分区表 |
-| `manifest.json` | 1.3 KB | 两个包的 sha256、大小、分区余量、构建参数 |
+| `P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-ota.bin` | 1,521,920 B (1.45 MB) | **平时升级用**。只写 app 分区，失败可回滚 |
+| `P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-full.bin` | 33,554,432 B (32 MB) | **首次烧录 / 救砖用**。整片镜像，含 bootloader 和分区表 |
 
-校验值（来自 `manifest.json`，已核对）：
+校验值（最新版，已核对）：
 
 | 文件 | sha256 |
 |---|---|
-| OTA | `4f6afb8309fdb25a6ff7b302d68924d000d9642b37b69ad331d43d81356fd35b` |
-| full | `bb61551f791192d6b1ef16312865e88e5f35bb786014e83dd25c2a074a34a462` |
+| OTA | `51936e140681da03968bfacccaed070b80e7ffd7b780a712db8ea0f5811c0933` |
+| full | `b19cb1226bc9c8be74f010600503f4253197b04ac3f626a78387794225f00165` |
+
+**上一个稳定回退版**（仓库根目录，供需要回退时用）：
+
+| 文件 | 大小 | sha256 |
+|---|---|---|
+| `P4can-unlock-more-v3.29.3-tlssc1-ota.bin` | 1,486,240 B | `4f6afb8309fdb25a6ff7b302d68924d000d9642b37b69ad331d43d81356fd35b` |
+| `P4can-unlock-more-v3.29.3-tlssc1-full.bin` | 33,554,432 B | `bb61551f791192d6b1ef16312865e88e5f35bb786014e83dd25c2a074a34a462` |
 
 下载后建议先校验：
 
 ```bash
-sha256sum P4can-unlock-more-v3.29.3-tlssc1-ota.bin
-# 应输出 4f6afb83...d35b
+sha256sum P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-ota.bin
+# 应输出 51936e14...1c0933
 ```
 
 ---
@@ -130,7 +160,7 @@ sha256sum P4can-unlock-more-v3.29.3-tlssc1-ota.bin
 
 1. 手机/电脑连上 P4 的热点
 2. 打开 `http://192.168.4.1` → **设置 → 固件更新**
-3. 选 `P4can-unlock-more-v3.29.3-tlssc1-ota.bin`
+3. 选 `P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-ota.bin`
 4. 点一下，再点一下确认，等进度条走完自动重启
 
 OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
@@ -138,7 +168,7 @@ OTA 只写 app 分区，**改不了 bootloader、分区表和 flash 参数**。
 ### 完整包 `*-full.bin` —— 首次烧录 / 救砖用
 
 ```bash
-esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-tlssc1-full.bin
+esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-v3.29.3-alight-shift-gpio-rebootfix-full.bin
 ```
 
 整片镜像布局（ESP32-P4 与 S3 不同，`0x0` 是空白 `0xFF`）：
@@ -149,7 +179,7 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 | `0x8000` | 分区表（magic `AA50`） |
 | `0x10000` | 应用镜像（magic `E9`） |
 
-刷完对照页面顶部版本号确认是 `v3.29.3-tlssc1`。
+刷完对照页面顶部版本号确认是 `v3.29.3-alight-shift-gpio-rebootfix`。
 
 ---
 
@@ -215,4 +245,4 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 
 ---
 
-[English](README.en.md)
+[English](README.en.md) · [Français](README.fr.md)
