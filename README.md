@@ -1,5 +1,6 @@
 # P4can-No-Reboot
 
+**[English](README.en.md) · [Français](README.fr.md)**
 **样本更新: 目前所有内测已确定解决重启，收到7个样本和视频**
 **需要自己手动在更多里打开开关**
 > 修好一件小事：**开了「被封车辆 + TLSSC 恢复」之后，车机不用每轮上电都自动重启一次了。**
@@ -26,8 +27,6 @@
 ---
 
 ## 最新版更新（v3.29.3-alight-shift-gpio-rebootfix）
-
-**[English](README.en.md) · [Français](README.fr.md)**
 
 最新成品发布在 [Releases 页面](https://github.com/baicyber/P4can-No-Reboot/releases/latest)，tag `v3.29.3-alight-shift-gpio-rebootfix`。仓库根目录保留的 `*-tlssc1-*.bin` 是上一个稳定回退版，供按需回退。
 
