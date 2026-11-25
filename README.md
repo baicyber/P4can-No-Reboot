@@ -236,12 +236,11 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 
 ## 📮 联系作者
 
-> 问题反馈，加好友注明来意。
+> 问题反馈，更多项目。
 
 <table>
   <tr>
     <td align="center"><img src="docs/sponsor/web_douyin.jpg" width="220" alt="抖音二维码"><br><sub><b>抖音 · @耶基大学懂事长</b><br>抖音号 <code>yejiuni</code></sub></td>
-    <td align="center"><img src="docs/sponsor/web_wechatauthor.jpg" width="220" alt="作者微信二维码"><br><sub><b>微信 · 扫码加好友</b></sub></td>
   </tr>
 </table>
 
