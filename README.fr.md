@@ -251,7 +251,7 @@ projet dans [LICENSE](LICENSE).
 <table>
   <tr>
     <td align="center"><img src="docs/sponsor/web_alipay.jpg" width="220" alt="QR code Alipay"><br><sub><b>Alipay</b></sub></td>
-    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="QR code WeChat Reward"><br><sub><b>Récompense WeChat</b></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechat_reward.jpg" width="220" alt="QR code WeChat Reward"><br><sub><b>Récompense WeChat</b></sub></td>
   </tr>
 </table>
 

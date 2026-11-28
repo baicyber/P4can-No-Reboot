@@ -367,7 +367,7 @@ liability. Not affiliated with Tesla, Inc.
 <table>
   <tr>
     <td align="center"><img src="docs/sponsor/web_alipay.jpg" width="220" alt="Alipay QR"><br><sub><b>Alipay</b></sub></td>
-    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="WeChat Reward QR"><br><sub><b>WeChat Reward</b></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechat_reward.jpg" width="220" alt="WeChat Reward QR"><br><sub><b>WeChat Reward</b></sub></td>
   </tr>
 </table>
 

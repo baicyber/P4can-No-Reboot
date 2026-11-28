@@ -421,7 +421,7 @@ sim/p4can-sim.html              本地模拟页（可直接打开）
 <table>
   <tr>
     <td align="center"><img src="docs/sponsor/web_alipay.jpg" width="220" alt="支付宝收款码"><br><sub><b>支付宝</b></sub></td>
-    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="微信赞赏码"><br><sub><b>微信赞赏</b></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechat_reward.jpg" width="220" alt="微信赞赏码"><br><sub><b>微信赞赏</b></sub></td>
   </tr>
 </table>
 
