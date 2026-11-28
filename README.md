@@ -14,14 +14,6 @@
 
 **界面默认中文**，右上角语言开关可切英文。
 
-> [!TIP]
-> **想先看界面、不刷机？** 仓库里附了一份**模拟页面**：
-> [`source/sim/p4can-sim.html`](source/sim/p4can-sim.html) —— 下载到本地、双击用浏览器打开即可交互
-> （GitHub 网页里直接点开只会看到源码，属正常现象）。
-> 内置假后端、无需板子、不连真车，页面顶部有醒目的「模拟页面 / SIMULATION」标识。
-> 可以放心点开体验所有开关和页面；它只演示界面，**不会改动任何真实车辆**。
-> 真正刷机用的是下面根目录的 `.bin`。
-
 > [!WARNING]
 > **只适用于 32 MB Flash 的板子**（微雪 ESP32-P4-C6-WIFI6 / rev3.2）。
 > **16 MB 版本刷这个包会直接变砖** —— 分区表 `app5M_fat24M_32MB` 与 16 MB flash 不匹配，
@@ -31,7 +23,7 @@
 
 ## 最新版更新（v3.29.3-alight-shift-gpio-rebootfix）
 
-最新成品发布在 [Releases 页面](https://github.com/baicyber/P4can-No-Reboot/releases/latest)，tag `v3.29.3-alight-shift-gpio-rebootfix`。仓库根目录保留的 `*-tlssc1-*.bin` 是上一个稳定回退版，供按需回退。
+最新成品发布在 [Releases 页面](https://github.com/baicyber/P4can-No-Reboot/releases/latest)，
 
 本版在 TLSSC 免重启之上新增：
 
@@ -80,13 +72,7 @@ TLSSC 恢复只做 `0x331` 的读-改-重发：**车发一帧，我们改一帧*
 爆闪 / AP 注入返回 `ESP_ERR_TIMEOUT`，被误记成失败。现在单列为「让位」，不计失败、
 下个周期自动重试；错误读数也从 `int8_t` 改 `int16_t`，不会再截断。
 
-**v3.29.3-nr2 起，TLSSC 免重启开关默认开启**：首次刷入或从 nr1 升级后开关即为开；
-不想用时到「更多功能 → TLSSC 免重启」手动关闭即可，之后会记住关闭状态。
-
-nr3 另修一处：首页「Nag Killer · 提醒抑制」开关在旧版/损坏的 NAG 快照下点不动、
-提示「Settings could not be saved」，以前只能整机 factory reset 恢复。现在允许用一份
-校验过的新快照直接覆盖坏记录，写入成功后再清掉读失败锁存——**不用再重置**。
-NVS 真不可写时仍会报错，不会掩盖真故障。
+**0x331免重启开关默认关闭**：需要手动打开开关；
 
 ### 怎么验证
 
