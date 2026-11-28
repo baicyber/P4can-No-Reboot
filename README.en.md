@@ -242,7 +242,7 @@ for the license of this project's additions.
 <table>
   <tr>
     <td align="center"><img src="docs/sponsor/web_alipay.jpg" width="220" alt="Alipay"><br><sub><b>Alipay</b></sub></td>
-    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="WeChat Pay"><br><sub><b>WeChat Pay</b></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="WeChat Reward"><br><sub><b>WeChat Reward</b></sub></td>
   </tr>
 </table>
 

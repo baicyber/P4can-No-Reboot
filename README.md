@@ -216,7 +216,7 @@ esptool.py --chip esp32p4 -p <PORT> -b 460800 write_flash 0x0 P4can-unlock-more-
 <table>
   <tr>
     <td align="center"><img src="docs/sponsor/web_alipay.jpg" width="220" alt="支付宝收款码"><br><sub><b>支付宝</b></sub></td>
-    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="微信收款码"><br><sub><b>微信支付</b></sub></td>
+    <td align="center"><img src="docs/sponsor/web_wechatpay.jpg" width="220" alt="微信赞赏码"><br><sub><b>微信赞赏</b></sub></td>
   </tr>
 </table>
 
